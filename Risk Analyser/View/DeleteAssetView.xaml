@@ -1,0 +1,28 @@
+﻿<Window x:Class="Risk_analyser.View.DeleteAssetView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Risk_analyser.View"
+        mc:Ignorable="d"
+        Title="Usuwanie zasobu" Height="250" Width="400">
+
+    <Grid >
+        <Grid.RowDefinitions>
+            <RowDefinition Height="0.8*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <StackPanel Margin="0,15,0,0" Grid.Row="0">
+            <TextBlock HorizontalAlignment="Center" Margin="0,10,0,0" TextWrapping="Wrap" Text="Czy napewno chcesz usunąć zasób:" VerticalAlignment="Top"
+                       FontSize="16"/>
+            <TextBlock HorizontalAlignment="Center" Margin="0,25,0,0" Text="{Binding AssetWithExtraText}" FontSize="14" FontWeight="Bold"/>
+        </StackPanel>
+        
+        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Grid.Row="1" >
+            <Button Width="100" Height="20" Content="Usuń" Command="{Binding DeleteAssetCommand}" Margin="0,0,15,0"/>
+            <Button Width="100" Height="20" Content="Anuluj" Command="{Binding CancelAssetCommand}" Margin="0,0,15,0"/>
+
+        </StackPanel>
+        
+    </Grid>
+</Window>

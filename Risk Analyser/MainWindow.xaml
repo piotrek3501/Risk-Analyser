@@ -1,0 +1,204 @@
+﻿<Window x:Class="Risk_analyser.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Risk_analyser.Converters"
+        xmlns:UserControll="clr-namespace:Risk_analyser.View.UserControll.Menu"
+        WindowState="Maximized" Background="#595959" 
+        WindowStyle="None" MouseLeftButtonDown="Window_MouseLeftButtonDown"
+        mc:Ignorable="d"
+        Title="MainWindow" >
+    <Window.Resources>
+        <local:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        
+            <Style TargetType="TextBlock">
+                <Setter Property="Foreground" Value="#F5F5F5"/>
+            </Style>
+            <Style TargetType="Label">
+                <Setter Property="Foreground" Value="#F5F5F5"/>
+            </Style>
+            <Style TargetType="Button">
+                <Setter Property="Foreground" Value="#F5F5F5"/>
+            </Style>
+        
+
+    </Window.Resources>
+    <Grid >
+        <Grid.RowDefinitions>
+            <!-- Top Bar-->
+            <RowDefinition Height="auto"/> 
+            <!--Main-->
+            <RowDefinition Height="0.9*"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" >
+            <UserControll:MenuBar/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" >
+                <Button x:Name="MinimizeButton" Height="30" Width="30" Content="-" Click="MinimizeButton_Click"  VerticalAlignment="Top"
+                        Margin="0" BorderThickness="0" Background="Transparent"/>
+                <Button x:Name="ResizeButton" Height="30" Width="30" Content="[]" Click="ResizeButton_Click" VerticalAlignment="Top"
+                        Margin="0" BorderThickness="0" Background="Transparent"/>
+                <Button x:Name="ExitButton" Width="30" Height="30" VerticalAlignment="Top" Content="X" Click="ExitButton_Click"
+                        Margin="0" BorderThickness="0" Background="Transparent"/>
+            </StackPanel>
+        </Grid>
+        <!--Main Content-->
+        <Grid Grid.Row="1" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="auto" MinWidth="300"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="20"/>
+            </Grid.ColumnDefinitions>
+            <!--Assets List-->
+            <Grid Grid.Column="1" >
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition Height="30"/>
+                </Grid.RowDefinitions>
+
+                <Grid  Grid.Row="0" Background="White" >
+                    <StackPanel>
+                        <TextBlock Text="Zasoby" FontSize="20" Background="#595959" HorizontalAlignment="Stretch" Padding="5"  VerticalAlignment="Center" TextAlignment="Center" Margin="0,0,0,5"/>
+                        <ScrollViewer  Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                            <ListBox ItemsSource="{Binding Assets}" SelectedItem="{Binding SelectedAsset}" FontSize="16" BorderThickness="0">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}"/>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </ScrollViewer>
+                    </StackPanel>
+
+                </Grid>
+
+                <Grid Grid.Row="1" Width="auto" Background="#595959"  >
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Center" >
+                        <Button Content="Dodaj"  Command="{Binding AddAssetCommand}"  Margin="0,0,80,0"  BorderThickness="0" Background="Transparent" FontSize="16"/>
+                        <Button Content="Usuń" Margin="0,0,80,0" Command="{Binding DeleteAssetCommand}" Visibility="{Binding SelectedAsset , Converter={StaticResource BooleanToVisibilityConverter} }"
+                                BorderThickness="0" Background="Transparent" FontSize="16"/>
+                        <Button Content="Edytuj"  BorderThickness="0" Command="{Binding UpdateAssetCommand}"  Visibility="{Binding SelectedAsset , Converter={StaticResource BooleanToVisibilityConverter} }" 
+                                Background="Transparent" FontSize="16"/>
+                    </StackPanel>
+                </Grid>
+
+            </Grid>
+            <!-- Right Edge of Assets List-->
+            <Grid Grid.Column="2" Background="#595959"/>
+            <!-- Risk and details-->
+            <Grid Grid.Column="3" >
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="500"    />
+                    <!--<RowDefinition Height="10"/>-->
+                    <RowDefinition Height="*" MinHeight="400"  />
+                    <RowDefinition Height="30" />
+                </Grid.RowDefinitions>
+               
+
+                <!--<GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" Margin="0"  VerticalAlignment="Stretch"  Background="#595959"></GridSplitter>-->
+
+                <!-- Risk List-->
+                <Grid Grid.Row="0" Background="White"  >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="0.5*"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="0.5*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0"  >
+
+                        <TextBlock Text="Zagrożenia" FontSize="20" Background="#595959" HorizontalAlignment="Stretch" Padding="5"  VerticalAlignment="Center" TextAlignment="Center" />
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" >
+                            <ListBox   ItemsSource="{Binding Risks}" SelectedItem="{Binding SelectedRisk}" FontSize="16" BorderThickness="0"
+                                       HorizontalContentAlignment="Stretch">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <DockPanel LastChildFill="True">
+                                            <Button Content="-" FontSize="16" Foreground="Red"
+                                                    Command="{Binding DataContext.DeleteRiskCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                                    CommandParameter="{Binding .}"
+                                                    Width="20" Margin="0,0,0,0" DockPanel.Dock="Right"/>
+                                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" DockPanel.Dock="Left"/>
+                                        </DockPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </ScrollViewer>
+                        <Button  Command="{Binding CurrentCommandAddOrUpdateRisk}" FontFamily="Italic" FontSize="16" Foreground="Black" Background="LightGray">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Setter Property="Content" Value="Edytuj zagrożenie"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedAsset}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding SelectedRisk}" Value="{x:Null}">
+                                            <Setter Property="Content" Value="Dodaj nowe zagrożenie"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                    </StackPanel>
+                    <Border Grid.Column="1" Background="#595959" VerticalAlignment="Stretch"/>
+                    <StackPanel Grid.Column="2" >
+                        <TextBlock Text="Środki łagodzące" FontSize="20" Background="#595959" HorizontalAlignment="Stretch" Padding="5"  VerticalAlignment="Center" TextAlignment="Center" />
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" >
+                            <ListBox   ItemsSource="{Binding Controls}" SelectedItem="{Binding SelectedControlRisk}" FontSize="16" BorderThickness="0"
+                                    HorizontalContentAlignment="Stretch">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <DockPanel LastChildFill="True">
+                                            <Button Content="-" FontSize="16" Foreground="Red"
+                                                    Command="{Binding DataContext.DeleteControlRiskCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                                    CommandParameter="{Binding .}"
+                                                    Width="20" Margin="0,0,0,0" DockPanel.Dock="Right"/>
+                                            <Button Content="+" FontSize="16" Foreground="Red"
+                                                    Command="{Binding DataContext.AddMitagationAction, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                                    CommandParameter="{Binding .}"
+                                                    Width="20" Margin="0,0,0,0" DockPanel.Dock="Right"/>
+                                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" DockPanel.Dock="Left"/>
+                                        </DockPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </ScrollViewer>
+                        <Button  Command="{Binding CurrentCommandAddOrUpdateControlRisk}"  FontFamily="Italic" FontSize="16" Foreground="Black" Background="LightGray">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Visibility" Value="Visible"></Setter>
+                                    <Setter Property="Content" Value="Edytuj środek"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedAsset}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding SelectedRisk}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding SelectedControlRisk}" Value="{x:Null}">
+                                            <Setter Property="Content" Value="Dodaj nowy środek"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+                <!-- Optional info-->
+                <Grid Grid.Row="1" Background="White" Margin="0">
+                    <TextBlock Text="Szczegóły" FontSize="20" Background="#595959" HorizontalAlignment="Stretch" Padding="5"  VerticalAlignment="Top" TextAlignment="Center" Margin="0,0,0,5"/>
+                    
+                    
+                </Grid>
+                <!--Button edge of Screen-->
+                <Grid Grid.Row="2"/> 
+
+            </Grid>
+            <!-- Right Edge of Screen-->
+            <Grid Grid.Column="4"/>
+        </Grid>
+    </Grid>
+</Window>
