@@ -1,10 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Risk_analyser.Data.DBContext;
-using Risk_analyser.Model;
+using Risk_analyser.Data.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Eventing.Reader;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,24 +13,18 @@ namespace Risk_analyser.Data.Repository
 {
     public class RiskRepository
     {
-        private DataContext _context;
-        private DbSet<Risk> risks;
-        private DbSet<Asset> assets;
-        private DbSet<FRAPAnalysis> FRAPAnalysis;
-        private DbSet<RhombusAnalysis> RhombusAnalyses;
+        private readonly DbSet<Risk> risks;
+        private readonly ContextManager ContextManager;
 
-        public RiskRepository(DataContext context)
+
+        public RiskRepository(DbSet<Risk> Risks)
         {
-            _context = context;
-            risks=_context.Risks;
-            FRAPAnalysis =_context.FRAPAnalyses;
-            RhombusAnalyses = _context.RhombusAnalyses;
+            risks= Risks;
         }
         public Risk LoadRiskWithEntities(long Id)
         {
             return risks.Include(x=>x.Asset)
                 .Include(x=>x.Controls)
-                .Include(x=>x.DoneMitigationActions)
                 .Include(x=>x.RhombusParams)
                 .Include(x=>x.Types)
                 .Single(x => x.RiskId == Id);
@@ -41,25 +36,30 @@ namespace Risk_analyser.Data.Repository
         public void EditRisk(Risk risk)
         {
             risks.Update(risk);
-            _context.SaveChanges();
+            ContextManager.SaveChanges();
         }
-        public void SaveRisk(Risk risk)
+        public void AddRisk(Risk risk)
         {
             risks.Add(risk);
-            _context.SaveChanges();
+            ContextManager.SaveChanges();
         }
         public void DeleteRisk(Risk risk)
         {
             risks.Remove(risk);
-            _context.SaveChanges();
+            ContextManager.SaveChanges();
         }
-        public bool CanDeleteRisk(Risk risk)
+        
+        public List<Risk> GetRisksForAsset(Asset asset)
         {
-            risk =LoadRiskWithEntities(risk.RiskId);
-
-            bool anyFRAP=_context.FRAPAnalyses.Where(x => x.Asset.AssetId == risk.Asset.AssetId).Any();
-            bool anyRhombus=_context.RhombusAnalyses.Where(x=>x.Asset.AssetId== risk.Asset.AssetId).Any();
-            return !(anyFRAP || anyRhombus);
+            return risks.Where(x => x.Asset.AssetId == asset.AssetId).ToList();
+        }
+        public List<Risk> GetAllRiskWithAsset()
+        {
+            return risks.Include(x => x.Asset).ToList();
+        }
+        public List<Risk> GetRisksForControlRisk(long ControlId)
+        {
+                 return risks.Include(x => x.Controls).Include(y=>y.Asset).ToList().Where(c=>c.Controls.Exists(y=>y.ControlRiskId==ControlId)).ToList();
         }
 
     }

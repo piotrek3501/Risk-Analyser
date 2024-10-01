@@ -1,7 +1,9 @@
 ﻿using Risk_analyser.Data.DBContext;
+using Risk_analyser.Data.Model.Entities;
 using Risk_analyser.Data.Repository;
-using Risk_analyser.Model;
 using Risk_analyser.MVVM;
+using Risk_analyser.services;
+using Risk_analyser.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +16,7 @@ namespace Risk_analyser.ViewModel
 {
     public class DeleteRiskViewModel:ViewModelBase
     {
-        private RiskRepository riskRepository {  get; set; } 
+        private RiskService RiskService { get; set; }
         private Risk SelectedRisk { get; }
         public bool DialogResult { get; private set; }
         public string RiskWithExtraText {
@@ -24,32 +26,20 @@ namespace Risk_analyser.ViewModel
         public ICommand DeleteRiskCommand { get; set; }
         public ICommand CancelRiskCommand { get; set; }
 
-        public DeleteRiskViewModel(DataContext context, Risk selectedRisk)
+        public DeleteRiskViewModel(Risk selectedRisk)
         {
-            riskRepository=new RiskRepository(context);
+            RiskService = MainWindowService.GetRiskService();
             SelectedRisk = selectedRisk;
-            DeleteRiskCommand=new RelayCommand(_=>DeleteRisk(),_=>CanDeleteRisk());
+            DeleteRiskCommand=new RelayCommand(_=>DeleteRisk(),_=>true);
             CancelRiskCommand =new RelayCommand(_=>CloseWindow(),_=>true);
         }
         private void  DeleteRisk()
         {
-            if (this.CanDeleteRisk())
-            {
-                riskRepository.DeleteRisk(SelectedRisk);
-                System.Windows.MessageBox.Show("Ryzyko zostało pomyślnie usunięte", "Usuwanie Ryzyka",MessageBoxButton.OK,MessageBoxImage.Information);
-            }
-            else
-            {
-                System.Windows.MessageBox.Show("Nie można usunąć ryzyka ponieważ dla zasobu do którego należy ryzyko ,zostały wygenerowane raporty z analiz." +
-                                "Usuń wszystkie raporty które związane są  tym ryzykiem, aby móc go usunąć", "Usuwanie Ryzyka",MessageBoxButton.OK,MessageBoxImage.Error);
-            }
+            RiskService.DeleteRisk(SelectedRisk);
             DialogResult = true;
             CloseWindow();
         }
-        private bool CanDeleteRisk()
-        {
-            return riskRepository.CanDeleteRisk(SelectedRisk);
-        }
+
         private void CloseWindow()
         {
             foreach (Window window in System.Windows.Application.Current.Windows)

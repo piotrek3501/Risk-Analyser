@@ -1,4 +1,5 @@
 ﻿using Risk_analyser.Data.DBContext;
+using Risk_analyser.Data.Model.Entities;
 using Risk_analyser.MVVM;
 using Risk_analyser.ViewModel;
 using System.ComponentModel;
@@ -20,17 +21,16 @@ namespace Risk_analyser
     /// </summary>
     public partial class MainWindow : Window
     {
-        private  DataContext _context=new DataContext();
+        //private  DataContext _context=new DataContext();
         public MainWindow()
         {
             InitializeComponent();
-            MainWindowViewModel vm=new MainWindowViewModel(_context);
+            MainWindowViewModel vm=new MainWindowViewModel();
             DataContext = vm;
 
         }
         private void ExitButton_Click(object sender, RoutedEventArgs e)
         {
-
             Application.Current.Shutdown();
         }
 
@@ -55,7 +55,55 @@ namespace Risk_analyser
         {
             DragMove();
         }
+        private void ListBoxItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is ListBoxItem listBoxItem)
+            {
+                // Uzyskaj element, który został kliknięty
+                var selectedAsset = listBoxItem.DataContext as Asset; // Zastąp YourAssetType odpowiednim typem
 
-       
+                // Uzyskaj odniesienie do okna
+                var window = Window.GetWindow(listBoxItem);
+
+                // Sprawdź, czy DataContext jest odpowiedniego typu
+                if (window?.DataContext is MainWindowViewModel viewModel)
+                {
+                    // Sprawdź, do której listy należy element
+                    var listBox = FindParentListBox(listBoxItem);
+                    if (listBox != null)
+                    {
+                        if (listBox.Name == "AssetsList")
+                        {
+                            // Wywołaj polecenie dla AssetsList
+                            if (viewModel.AssetListDoubleClickCommand.CanExecute(selectedAsset))
+                            {
+                                viewModel.AssetListDoubleClickCommand.Execute(selectedAsset);
+                            }
+                        }
+                        // Dodaj inne warunki dla innych ListBoxów, jeśli to konieczne
+                        else if (listBox.Name == "RisksList")
+                        {
+                            if (viewModel.RiskListDoubleClickCommand.CanExecute(null))
+                            {
+                                viewModel.RiskListDoubleClickCommand.Execute(null);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        private ListBox FindParentListBox(DependencyObject child)
+        {
+            while (child != null)
+            {
+                if (child is ListBox listBox)
+                    return listBox;
+
+                child = VisualTreeHelper.GetParent(child);
+            }
+            return null;
+        }
+
+
     }
 }

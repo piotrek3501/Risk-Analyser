@@ -1,17 +1,12 @@
 ﻿using Risk_analyser.Data.DBContext;
+using Risk_analyser.Data.Model;
+using Risk_analyser.Data.Model.Entities;
 using Risk_analyser.Data.Repository;
-using Risk_analyser.Model;
 using Risk_analyser.MVVM;
 using Risk_analyser.services;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Risk_analyser.Services;
 using System.Windows;
 using System.Windows.Input;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
 
 namespace Risk_analyser.ViewModel
 {
@@ -20,13 +15,10 @@ namespace Risk_analyser.ViewModel
         private DataContext _context;
         private Risk _selectedRisk;
         private ControlRisk _selectedControlRisk;
-        private ControlRiskRepository ControlRiskRepository { get; set; }
-        private MitagationRepository MitagationRepository { get; set; }
-        private RiskRepository RiskRepository { get; set; }
-        private List<Risk>_ControlRisksList { get; set; }
-        private List<MitagationAction> _ControlMitagationsList {  get; set; }
-        public List<MitagationItem>MitagationItems { get; set; } =new List<MitagationItem>();
-        public List<RiskItem>RiskItems { get; set; } = new List<RiskItem>();
+        private List<Risk>_RisksList { get; set; }
+        private List<MitagationAction> _MitagationsList {  get; set; }
+        public List<MitagationDataGridItem>MitagationItems { get; set; } =new List<MitagationDataGridItem>();
+        public List<RiskDataGridItem>RiskItems { get; set; } = new List<RiskDataGridItem>();
         public bool DialogResult { get; private set; }
         public ICommand AddControlRiskCommand { get; set; }
         public ICommand EditControlRiskCommand { get; set; }
@@ -69,87 +61,72 @@ namespace Risk_analyser.ViewModel
                 OnPropertyChanged();
             }
         }
-        public List<Risk> ControlRisksList
+        public List<Risk> RisksList
         {
-            get { return _ControlRisksList; }
+            get { return _RisksList; }
             set
             {
-                _ControlRisksList= value;
+                _RisksList= value;
                 OnPropertyChanged();
             }
         }
-        public List<MitagationAction> ControlMitagationsList
+        public List<MitagationAction> MitagationsList
         {
-            get { 
-               { return _ControlMitagationsList; } 
+           get { 
+               { return _MitagationsList; } 
             }
-            set
+           set
             {
-                _ControlMitagationsList= value;
-                OnPropertyChanged();
-            }
+               _MitagationsList= value;
+               OnPropertyChanged();
+           }
         }
-        public UpdateOrAddControlRiskViewModel(DataContext context)
+        public UpdateOrAddControlRiskViewModel()
         {
-            _context = context;
-            ControlRiskRepository = new ControlRiskRepository(_context);
+            
             AddControlRiskCommand = new RelayCommand(_ => AddControlRisk(), _ => CanAddControlRisk());
             EditControlRiskCommand=new RelayCommand(_=>EditControlRisk(),_=>CanEditControlRisk());
             CancelControlRiskCommand = new RelayCommand(_ => CloseWindow(), _ => true);
-            _ControlMitagationsList = ControlRiskRepository.GetAllMitagationActions();
-            _ControlRisksList = ControlRiskRepository.GetAllRiskWithAsset();
-            MitagationRepository = new MitagationRepository(_context);
-            RiskRepository= new RiskRepository(_context);
+            ControlRiskService =MainWindowService.GetControlRiskService();
+            _MitagationsList = ControlRiskService.GetAllMitagationActions();
+            _RisksList = ControlRiskService.GetAllRiskWithAsset();
 
-            ControlRiskService=new ControlRiskService(_context);
+
+
 
         }
 
-        public UpdateOrAddControlRiskViewModel(DataContext context,Asset selectedAsset):this(context)
+        public UpdateOrAddControlRiskViewModel(Asset selectedAsset) :this()
         {
             //this._selectedRisk = RiskRepository.LoadRiskWithEntities(selectedRisk.RiskId);
            
             CurrentCommand = AddControlRiskCommand;
-            foreach (Risk r in _ControlRisksList)
-            {
-                Risk risk=RiskRepository.LoadRiskWithEntities(r.RiskId);
-                bool BelongToAssetOfSelectedAsset= selectedAsset.AssetId==risk.AssetId;
-                RiskItems.Add(new RiskItem(risk.RiskId,risk.Name,risk.Description,risk.Asset.Name, BelongToAssetOfSelectedAsset));
-            }
-            foreach(MitagationAction action in _ControlMitagationsList)
-            {
-                MitagationAction mit = MitagationRepository.LoadMitagationWithEntities(action.MitagatioActionId);
-                MitagationItems.Add(new MitagationItem(mit.MitagatioActionId,mit.Action,mit.Person,mit.DateOfAction,false));
-            }
+            RiskItems=ControlRiskService.InitRisksForDataGrid(RisksList, selectedAsset);
+            MitagationItems = ControlRiskService.InitMitigationForDataGrid(MitagationsList);
         }
 
-        public UpdateOrAddControlRiskViewModel(DataContext context, ControlRisk selectedControlRisk) : this(context)
+        public UpdateOrAddControlRiskViewModel(ControlRisk selectedControlRisk) : this()
         {
-            _selectedControlRisk = ControlRiskRepository.LoadControlRiskWithEntities(selectedControlRisk.ControlRiskId);
+            _selectedControlRisk = ControlRiskService.LoadControlRiskWithEntities(selectedControlRisk.ControlRiskId);
+            Name = _selectedControlRisk.Name;
+            Description = _selectedControlRisk.Description;
             CurrentCommand = EditControlRiskCommand;
-            foreach (Risk r in _ControlRisksList)
-            {
-                Risk risk = RiskRepository.LoadRiskWithEntities(r.RiskId);
-                RiskItems.Add(new RiskItem(risk.RiskId,risk.Name,risk.Description,risk.Asset.Name,_selectedControlRisk.Risks.Contains(risk)));
-            }
-            foreach (MitagationAction action in _ControlMitagationsList)
-            {
-                MitagationAction mit = MitagationRepository.LoadMitagationWithEntities(action.MitagatioActionId);
-                MitagationItems.Add(new MitagationItem(mit.MitagatioActionId,mit.Action,
-                    mit.Person,mit.DateOfAction,_selectedControlRisk.Mitagations.Contains(action)));
-            }
+            RiskItems=ControlRiskService.InitRisksForDataGrid(RisksList,_selectedControlRisk);
+            //MitagationItems=ControlRiskService.InitMitigationForDataGrid(MitagationsList,_selectedControlRisk);
+            MitagationItems = ControlRiskService.InitMitigationForDataGrid(MitagationsList, _selectedControlRisk);
+
         }
 
         private void AddControlRisk() {
             ControlRisk newControl = new ControlRisk()
             {
-                Name =this.Name,
-                Description=this.Description,
+                Name = this.Name,
+                Description = this.Description,
                 Risks = ControlRiskService.GetSelectedRisks(RiskItems),
-                Mitagations=ControlRiskService.GetSelectedMitigation(MitagationItems)
+                Mitagations = ControlRiskService.GetSelectedMitigation(MitagationItems),
+                CreationDate = DateTime.Now
             };
-            ControlRiskRepository.SaveRisk(newControl);
-            System.Windows.MessageBox.Show("Środek został pomyślnie dodany", "Utworzenie Środka");
+            ControlRiskService.AddControlRisk(newControl);
             DialogResult = true;
             CloseWindow();
 
@@ -159,11 +136,15 @@ namespace Risk_analyser.ViewModel
             //SelectedControlRisk=ControlRiskRepository.LoadControlRiskWithEntities(SelectedControlRisk.ControlRiskId);
             ControlRisk updatedControl = new ControlRisk()
             {
-                Name =Name,
-                Description = Description,
+                ControlRiskId=SelectedControlRisk.ControlRiskId,
+                Name =this.Name,
+                Description = this.Description,
             };
             updatedControl.Risks = ControlRiskService.GetSelectedRisks(RiskItems);
             updatedControl.Mitagations=ControlRiskService.GetSelectedMitigation(MitagationItems);
+            ControlRiskService.EditControlRisk(updatedControl);
+            DialogResult = true;
+            CloseWindow();
         }
         private bool CanEditControlRisk()
         {
@@ -189,36 +170,4 @@ namespace Risk_analyser.ViewModel
         }
     }
 }
-public class RiskItem
-{
-    public string Risk { get; set; }
-    public long RiskId {  get; set; }
-    public string RiskDesc { get; set; }
-    public string Asset {  get; set; }
-    public bool BelongToControlRisk { get; set; }
-    public RiskItem(long id,string risk,string riskdesc,string asset,bool status)
-    {
-        RiskId = id;
-        Risk = risk;
-        Asset = asset;
-        RiskDesc = riskdesc;
-        BelongToControlRisk = status;
-    }
 
-}
-public class MitagationItem
-{
-    public string Worker { get; set; }
-    public string Action {  get; set; }
-    public DateOnly DateOfAction { get; set; }
-    public long IdMitagation { get; set; }
-    public bool BelongToControlRisk { get; set; }
-    public MitagationItem(long id,string action,string worker,DateOnly date,bool status)
-    {
-        IdMitagation = id;
-        Worker = worker;
-        Action = action;
-        DateOfAction = date;
-        BelongToControlRisk = status;
-    }
-}

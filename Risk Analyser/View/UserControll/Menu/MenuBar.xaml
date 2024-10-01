@@ -6,64 +6,37 @@
              xmlns:local="clr-namespace:Risk_analyser.View.UserControll.Menu"
              mc:Ignorable="d" 
              d:DesignHeight="70" d:DesignWidth="1080" >
-
-    <Grid >
-        <Grid >
-            <Grid.RowDefinitions>
-                <RowDefinition Height="30" />
-                <RowDefinition Height="40" />
-            </Grid.RowDefinitions>
-            <Grid Grid.Row="0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                
-                <Grid Grid.Column="0" HorizontalAlignment="Left" >
-                    <Menu Background="#595959" Foreground="#F5F5F5"  >
-                        <Menu.Resources>
-                            <!-- Styl dla MenuItem -->
-                            <Style TargetType="MenuItem">
-                                <Setter Property="FontSize" Value="16"/>
-                                <Setter Property="Margin" Value="20,0,0,0"/>
-                                <Setter Property="BorderThickness" Value="0"/>
-
-                                <Setter Property="Background" Value="#595959"/>
-                                <Setter Property="Foreground" Value="#F5F5F5"/>
-                               
-                               
-                                <Setter Property="Padding" Value="5"/>
-                            </Style>
-                        </Menu.Resources>
-                        <MenuItem Header="Plik"  Background="#595959" >
-                            <MenuItem  Background="#595959" Header="Exit" />
-                        </MenuItem>
-                        <MenuItem Header="Widok" >
-                            <MenuItem Header="Zminimalizuj"/>
-                            <MenuItem Header="Zmaksymalizuj"/>
-                        </MenuItem>
-                        <MenuItem Header="Projekt">
-                            <MenuItem Header="Dodaj Zasób"/>
-                            <MenuItem Header="Dodaj Ryzyko"/>
-                            <MenuItem Header="Dodaj kategorie łagodzące"/>
-                        </MenuItem>
-                        <MenuItem Header="Analiza">
-                            <MenuItem Header="Przeprowadź FRAP"/>
-                            <MenuItem Header="Przeprowadź romboidalną"/>
-                        </MenuItem>
-                        <MenuItem Header="Raport Akcji"/>
-                    </Menu>
-                </Grid>
+    <Menu Background="#C4DBF6" Foreground="Black"  BorderThickness="0">
+          <Menu.Resources>
+                <Style TargetType="MenuItem">
+                    <Setter Property="FontSize" Value="14"/>
+                    <Setter Property="Foreground" Value="Black"/>
+                <Setter Property="Margin" Value="10,5,10,5"/>
+                <Setter Property="Padding" Value="5"/>
+            </Style>
+          </Menu.Resources>
+        
+          <MenuItem Header="Plik">
+            <MenuItem  Header="Exit"  />
+          </MenuItem>
+        
+          <MenuItem Header="Widok" >
+                 <MenuItem Header="Zminimalizuj"/>
+                 <MenuItem Header="Zmaksymalizuj"/>
+          </MenuItem>
+          <MenuItem Header="Projekt">
+            <MenuItem Header="Dodaj Zasób" Command="{Binding DataContext.AddAssetCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+                  <MenuItem Header="Dodaj Ryzyko"/>
+                  <MenuItem Header="Dodaj kategorie łagodzące"/>
+          </MenuItem>
+          <MenuItem Header="Analiza" >
+                  <MenuItem Header="Przeprowadź FRAP" Command=""/>
+                   <MenuItem Header="Przeprowadź romboidalną" />
+          </MenuItem>
+          <MenuItem Header="Raport Akcji"/>
+    </Menu>
+    
                
-            </Grid>
-            <Grid Grid.Row="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition Width="auto"/>
-                </Grid.ColumnDefinitions>
-                <Button Width="50" Margin="5" Background="Transparent"/>
-            </Grid>
-
-        </Grid>
-    </Grid>
+           
 </UserControl>
 

@@ -1,5 +1,4 @@
-﻿using Risk_analyser.Model;
-using Risk_analyser.MVVM;
+﻿using Risk_analyser.MVVM;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,14 +9,15 @@ using System.Windows;
 using System.Windows.Input;
 using Risk_analyser.Data.DBContext;
 using Risk_analyser.Data.Repository;
+using Risk_analyser.Data.Model.Entities;
+using Risk_analyser.Services;
 
 namespace Risk_analyser.ViewModel
 {
     public class DeleteAssetViewModel:ViewModelBase
     {
-        private readonly DataContext _context;
         private Asset _asset { get; set; }
-        private AssetRepository _assetRepository { get; set; }
+        private AssetService AssetService { get; set; }
         public ICommand DeleteAssetCommand { get;  }
         public ICommand CancelAssetCommand { get; }
         public bool DialogResult { get; private set; }
@@ -37,38 +37,22 @@ namespace Risk_analyser.ViewModel
             }
         }
 
-        public DeleteAssetViewModel(DataContext context,Asset asset) { 
+        public DeleteAssetViewModel(Asset asset ) { 
         
-            _context = context;
             _asset=asset;
-            _assetRepository=new AssetRepository(context);
-            DeleteAssetCommand = new RelayCommand(_=>DeleteAsset(),_=>Asset!=null && CanDeleteAsset());
+            AssetService = MainWindowService.GetAssetService();
+            DeleteAssetCommand = new RelayCommand(_=>DeleteAsset(),_=>Asset!=null);
             CancelAssetCommand = new RelayCommand(_=>CloseWindow(),_=>true);
         }
 
         private void DeleteAsset()
         {
-            if (CanDeleteAsset())
-            {
-                _assetRepository.DeleteAsset(Asset);
-                System.Windows.MessageBox.Show("Zasób został pomyślnie usunięty", "Usuwanie Zasobu",MessageBoxButton.OK,MessageBoxImage.Information);
-
-            }
-            else
-            {
-                System.Windows.MessageBox.Show("Nie można usunąć zasobu ponieważ zostały wygenerowane dla niego raporty z analiz." +
-                    "Usuń wszystkie raporty i ryzyka które związane z zasobem, aby móc go usunąć", "Usuwanie Zasobu",MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-            }
+            AssetService.DeleteAsset(Asset);
             DialogResult = true;
             CloseWindow();
             
         }
         
-        private bool CanDeleteAsset()
-        {
-            return _assetRepository.CanDeleteAsset(Asset);
-        }
         private void CloseWindow()
         {
             foreach (Window window in System.Windows.Application.Current.Windows)

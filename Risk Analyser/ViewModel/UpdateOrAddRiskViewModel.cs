@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Risk_analyser.Data.DBContext;
+using Risk_analyser.Data.Model.Entities;
 using Risk_analyser.Data.Repository;
-using Risk_analyser.Model;
 using Risk_analyser.MVVM;
+using Risk_analyser.services;
+using Risk_analyser.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -13,14 +15,12 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
-using static Risk_analyser.Model.Rhombus;
+using static Risk_analyser.Data.Model.Entities.Rhombus;
 
 namespace Risk_analyser.ViewModel
 {
     public class UpdateOrAddRiskViewModel:ViewModelBase
     {
-        private DataContext _context { get; set; }
-        private RiskRepository RiskRepository { get; set; }
         private Asset _selectedAsset { get; set; }
         private Risk _selectedRisk { get; set; }
         private string _name;
@@ -44,12 +44,13 @@ namespace Risk_analyser.ViewModel
         private ObservableCollection<Priority> _priorityItems;
         private ObservableCollection<PotencialEffect> _potencialEffectItems;
         private ObservableCollection<Vulnerability> _vulnerabilityItems;
-
+        private Risk CopyRisk { get; set; }
         public bool DialogResult { get; private set; }
         public ICommand AddRiskCommand { get; set; }
         public ICommand EditRiskCommand { get; set; }
         public ICommand CurrentCommand { get; set; }
         public ICommand CancelRiskCommand { get; set; }
+        private RiskService RiskService { get; set; }
         public Asset SelectedAsset
         {
             get { return _selectedAsset; }
@@ -158,25 +159,45 @@ namespace Risk_analyser.ViewModel
       
         public bool SelectedTypeRiskINT
         {
-            get { return _selectedTypeRiskINT; }
+            get {
+                if (_selectedTypeRiskINT == null)
+                {
+                    _selectedTypeRiskINT = false;
+                }
+                return _selectedTypeRiskINT; 
+            }
             set
             {
                 _selectedTypeRiskINT = value;
                 OnPropertyChanged();
             }
         }
-        private bool SelectedTypeRiskCON
+        public bool SelectedTypeRiskCON
         {
-            get { return _selectedTypeRiskCON; }
+            get
+            {
+                if (_selectedTypeRiskINT == null)
+                {
+                    _selectedTypeRiskINT = false;
+                }
+                return _selectedTypeRiskCON; 
+            }
             set
             {
                 _selectedTypeRiskCON = value;
                 OnPropertyChanged();
             }
         }
-        private bool SelectedTypeRiskAVA
+        public bool SelectedTypeRiskAVA
         {
-            get { return _selectedTypeRiskAVA; }
+            get
+            {
+                if (_selectedTypeRiskINT == null)
+                {
+                    _selectedTypeRiskINT = false;
+                }
+                return _selectedTypeRiskAVA;
+            }
             set
             {
                 _selectedTypeRiskAVA = value;
@@ -299,18 +320,23 @@ namespace Risk_analyser.ViewModel
                 _selectedRisk = value;
                 //EditRiskCommand = new RelayCommand(_ => EditRisk(), _ => CanEditRisk());
                 //CurrentCommand = EditRiskCommand;
-                OnPropertyChanged();
+                //OnPropertyChanged();
             }
         }
-        public UpdateOrAddRiskViewModel(DataContext context,Asset selectedAsset):this(context)
+        public UpdateOrAddRiskViewModel(Asset selectedAsset ):this()
         {
             SelectedAsset = selectedAsset;
             CurrentCommand = AddRiskCommand;
+            SelectedTypeInovation = TypeInovationItems.First();
+            SelectedTypeTechnology = TypeTechnologyItems.First();
+            SelectedTypeComplexity = TypeComplexityItems.First();
+            SelectedTypeRate = TypeRateItems.First();
         }
 
-        public UpdateOrAddRiskViewModel(DataContext context,Risk selectedRisk):this(context)
+        public UpdateOrAddRiskViewModel(Risk selectedRisk) :this()
         {
-            SelectedRisk = RiskRepository.LoadRiskWithEntities(selectedRisk.RiskId);
+            
+            SelectedRisk = RiskService.LoadRiskWithEntities(selectedRisk.RiskId);
             SelectedAsset = SelectedRisk.Asset;
             Name = SelectedRisk.Name;
             Description = SelectedRisk.Description;
@@ -343,11 +369,11 @@ namespace Risk_analyser.ViewModel
             SelectedTypeTechnology= SelectedRisk.RhombusParams.Technology;
             SelectedTypeComplexity = SelectedRisk.RhombusParams.Complexity;
             SelectedTypeRate = SelectedRisk.RhombusParams.Rate;
-
+           
             CurrentCommand = EditRiskCommand;
 
         }
-        public UpdateOrAddRiskViewModel(DataContext context)
+        public UpdateOrAddRiskViewModel()
         {
 
             TypeInovationItems = new ObservableCollection<TypeInovation>(Enum.GetValues(typeof(TypeInovation)).Cast<TypeInovation>());
@@ -358,31 +384,21 @@ namespace Risk_analyser.ViewModel
             PriorityItems=new ObservableCollection<Priority>(Enum.GetValues(typeof(Priority)).Cast<Priority>());
             PotencialEffectItems=new ObservableCollection<PotencialEffect>(Enum.GetValues(typeof(PotencialEffect)).Cast<PotencialEffect>());
             VulnerabilityItems=new ObservableCollection<Vulnerability>(Enum.GetValues(typeof(Vulnerability)).Cast<Vulnerability>());
-            
-            RiskRepository = new RiskRepository(context);
+            RiskService=MainWindowService.GetRiskService();
             CancelRiskCommand = new RelayCommand(_ => CloseWindow(), _ => true);
-            EditRiskCommand = new RelayCommand(_ => EditRisk(), _ => CanEditRisk());
-            AddRiskCommand = new RelayCommand(_ => AddRisk(), _ => CanAddRisk());
-
-
+            EditRiskCommand = new RelayCommand(_ => EditRisk(), _ => true);
+            AddRiskCommand = new RelayCommand(_ => AddRisk(), _ => true);
 
         }
-        private bool CanEditRisk()
-        {
-            return _selectedRisk != null;
-        }
-
-        private bool CanAddRisk()
-        {
-            return  _selectedAsset != null;
-
-        }
-        
+       
+      
         public void EditRisk()
         {
-            var updatedRisk = SelectedRisk;
+            Risk updatedRisk = new Risk();
+            updatedRisk.RiskId = SelectedRisk.RiskId;
             updatedRisk.Name = Name;
             updatedRisk.Description = Description;
+            updatedRisk.RhombusParams = new Rhombus();
             updatedRisk.RhombusParams.Inovation = SelectedTypeInovation;
             updatedRisk.RhombusParams.Complexity=SelectedTypeComplexity;
             updatedRisk.RhombusParams.Technology=SelectedTypeTechnology;
@@ -390,6 +406,7 @@ namespace Risk_analyser.ViewModel
             updatedRisk.Vulnerability = SelectedVurnelability;
             updatedRisk.Propability = SelectedProbability;
             updatedRisk.PotencialEffect = SelectedPotencialEffect;
+            updatedRisk.Types = new List<RiskType>();
             updatedRisk.Types.Clear();
             if (SelectedTypeRiskINT == true)
             {
@@ -406,12 +423,11 @@ namespace Risk_analyser.ViewModel
             }
             // wywolanie settar aby ten okreslij wartosc dla priority
             updatedRisk.Priority = SelectedPriority;   
-            RiskRepository.EditRisk(updatedRisk);
-            System.Windows.MessageBox.Show("Ryzyko zostało pomyślnie zmienione", "Edycja Ryzyka");
-            DialogResult = true;
+           // RiskService.EditRisk(updatedRisk);
+            DialogResult = RiskService.EditRisk(updatedRisk);
             CloseWindow();
         }
-
+ 
         private void AddRisk()
         {
 
@@ -435,7 +451,6 @@ namespace Risk_analyser.ViewModel
                     Rate = SelectedTypeRate,
 
                 },
-                DoneMitigationActions = new List<ActionReport>()
 
             };
             if (SelectedTypeRiskINT == true)
@@ -455,9 +470,7 @@ namespace Risk_analyser.ViewModel
             newRisk.RhombusParams.Risk = newRisk;
             newRisk.RhombusParams.RiskId = newRisk.RiskId;
             newRisk.Priority = SelectedPriority;
-            RiskRepository.SaveRisk(newRisk);
-
-            System.Windows.MessageBox.Show("Ryzyko zostało pomyślnie dodane", "Utworzenie Ryzyka");
+            RiskService.AddRisk(newRisk);
             DialogResult = true;
             CloseWindow();
         }

@@ -7,123 +7,125 @@
         xmlns:conv="clr-namespace:Risk_analyser.Converters"
         mc:Ignorable="d"
         ResizeMode="NoResize"
+        Icon="\Static\Icons\window_icon.ico"
         WindowStyle="SingleBorderWindow"
+        WindowStartupLocation="CenterScreen"
         
-        Title="UpdateOrAddRiskView" Height="500" Width="1100">
+        Title="UpdateOrAddRiskView" Height="580" Width="1100">
     <Window.Resources>
         <conv:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
         <conv:ButtonContentConverter x:Key="ButtonContentConverter"/>
     </Window.Resources>
     <Grid>
         <DockPanel>
-            <StackPanel Margin="0,20,10,20" Orientation="Vertical" HorizontalAlignment="Left" DockPanel.Dock="Left" Width="400" >
+            <StackPanel Margin="0,0,10,20" Orientation="Vertical" HorizontalAlignment="Left" DockPanel.Dock="Left" Width="400" >
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Label Target="{Binding ElementName=RiskName}" Content="Nazwa Ryzyka" VerticalAlignment="Center" Margin="0,50,0,20"/>
-                <TextBox x:Name="RiskName" Text="{Binding Name}" Width="250" Margin="10,50,0,20"/>
+                <Label Target="{Binding ElementName=RiskName}" FontSize="14" Content="Nazwa Ryzyka" VerticalAlignment="Center" Margin="0,50,0,20"/>
+                    <TextBox x:Name="RiskName" Text="{Binding Name}" FontSize="14" Width="250" Margin="10,50,0,20"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
-                <Label Target="{Binding ElementName=RiskDescription}" Content="Opis" Margin="60,10,5,100"/>
-                    <TextBox x:Name="RiskDescription" Text="{Binding Description}" Width="250" Margin="10,20,20,20" Height="150" AcceptsReturn="True"
+                    <Label Target="{Binding ElementName=RiskDescription}" Content="Opis" FontSize="14" Margin="70,10,5,100"/>
+                    <TextBox x:Name="RiskDescription" Text="{Binding Description}" FontSize="14" Width="250" Margin="10,20,20,20" Height="250" AcceptsReturn="True"
                          TextWrapping="Wrap"  VerticalScrollBarVisibility="Auto"/>
 
             </StackPanel>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,60,0,0">
-                    <Button  x:Name="CommitButton" Command="{Binding CurrentCommand}" Width="100" 
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,30,0,0">
+                    <Button  x:Name="CommitButton" Background="#C4DBF6" FontSize="14" Command="{Binding CurrentCommand}" Width="100" 
                             HorizontalAlignment="Center" Margin="100,30,20,10"
                              Content="{Binding SelectedRisk, Converter={StaticResource ButtonContentConverter}}" >
                         
 
                     </Button>
-                    <Button Content="Anuluj" Command="{Binding CancelRiskCommand}" Width="100" HorizontalAlignment="Center" Margin="20,30,20,10"/>
+                    <Button Content="Anuluj" FontSize="14" Background="#C4DBF6" Command="{Binding CancelRiskCommand}" Width="100" HorizontalAlignment="Center" Margin="20,30,20,10"/>
 
                 </StackPanel>
 
             </StackPanel>
-            <StackPanel Orientation="Vertical" DockPanel.Dock="Right" Margin="0,20,20,20">
-                <GroupBox Header="Parametry metody Romboidalnej" Margin="20">
+            <StackPanel Orientation="Vertical" DockPanel.Dock="Right" Margin="0,30,20,30">
+                <GroupBox Header="Parametry metody Romboidalnej" Margin="20" FontSize="14">
                     <WrapPanel Orientation="Horizontal"  HorizontalAlignment="Center">
-                        <Label Target="{Binding ElementName=InnovationCombo}" Content="Innowacyjność" Margin="70,20,0,20"/>
+                        <Label Target="{Binding ElementName=InnovationCombo}" Content="Innowacyjność" Margin="35,20,0,20"/>
                         <ComboBox x:Name="InnovationCombo" ItemsSource="{Binding TypeInovationItems}"
                                   SelectedItem="{Binding SelectedTypeInovation , Mode=TwoWay}"
-                                  Width="100" Margin="10,20,15,20">
+                                  Width="120" Margin="10,20,35,20">
                              <ComboBox.ItemTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding ., Converter={StaticResource EnumDescriptionConverter}}"/>
+                                    <TextBlock FontSize="14" Text="{Binding ., Converter={StaticResource EnumDescriptionConverter}}"/>
                                 </DataTemplate>
                              </ComboBox.ItemTemplate>
                           </ComboBox>
-                        <Label Target="{Binding ElementName=ComplexityCombo}" Content="Złożoność" Margin="20,20,0,20"/>
+                        <Label Target="{Binding ElementName=ComplexityCombo}" FontSize="14" Content="Złożoność" Margin="20,20,0,20"/>
                         <ComboBox x:Name="ComplexityCombo" ItemsSource="{Binding TypeComplexityItems}"
                                   SelectedItem="{Binding SelectedTypeComplexity , Mode=TwoWay}"
-                                  Width="100" Margin="10,20,80,20">
+                                  Width="120" Margin="4,20,80,20">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding ., Converter={StaticResource EnumDescriptionConverter}}"/>
+                                    <TextBlock  FontSize="14" Text="{Binding ., Converter={StaticResource EnumDescriptionConverter}}"/>
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
-                        <Label Target="{Binding ElementName=TechnologyCombo}" Content="Technologia" Margin="85,0,0,20"/>
+                        <Label Target="{Binding ElementName=TechnologyCombo}" FontSize="14" Content="Technologia" Margin="40,0,10,20"/>
                         <ComboBox x:Name="TechnologyCombo" ItemsSource="{Binding TypeTechnologyItems }"
-                                  SelectedItem="{Binding SelectedTypeTechnology ,Mode=TwoWay}"  Width="100" Margin="10,0,0,20">
+                                  SelectedItem="{Binding SelectedTypeTechnology ,Mode=TwoWay}"  Width="120" Margin="10,0,20,20">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding .,Converter={StaticResource EnumDescriptionConverter}}"/>
+                                    <TextBlock FontSize="14" Text="{Binding .,Converter={StaticResource EnumDescriptionConverter}}"/>
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
-                        <Label  Target="{Binding ElementName=RateCombo}"  Content="Tempo" Margin="50,0,0,20"/>
-                        <ComboBox Width="100" x:Name="RateCombo" ItemsSource="{Binding TypeRateItems}"
+                        <Label  Target="{Binding ElementName=RateCombo}" FontSize="14"  Content="Tempo" Margin="50,0,0,20"/>
+                        <ComboBox Width="120" x:Name="RateCombo" ItemsSource="{Binding TypeRateItems}"
                                   SelectedItem="{Binding SelectedTypeRate, Mode=TwoWay}" Margin="10,0,0,20">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding .,Converter={StaticResource EnumDescriptionConverter}}"/>
+                                    <TextBlock FontSize="14" Text="{Binding .,Converter={StaticResource EnumDescriptionConverter}}"/>
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
                     </WrapPanel>
                 </GroupBox>
-                <GroupBox Header="Parametry dla analizy FRAP" Margin="20,10,20,20">
+                <GroupBox Header="Parametry dla analizy FRAP" Margin="20,30,20,30" FontSize="14">
                     <WrapPanel>
-                        <Label Target="{Binding ElementName=VurnelabilityCombo}" Content="Podatność" Margin="10,20,0,20"/>
-                        <ComboBox x:Name="VurnelabilityCombo" ItemsSource="{Binding VulnerabilityItems}" 
+                        <Label Target="{Binding ElementName=VurnelabilityCombo}" FontSize="14" Content="Podatność" Margin="5,20,0,20"/>
+                        <ComboBox x:Name="VurnelabilityCombo"  ItemsSource="{Binding VulnerabilityItems}" 
                                  SelectedItem="{Binding SelectedVurnelability ,Mode=TwoWay}" Width="100" Margin="5,20,10,20">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding .,Converter={StaticResource EnumDescriptionConverter}}"/>
+                                    <TextBlock FontSize="14" Text="{Binding .,Converter={StaticResource EnumDescriptionConverter}}"/>
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
-                        <Label Target="{Binding ElementName=PropabilityCombo}" Content="Prawdopobieństwo" Margin="10,20,0,20"/>
+                        <Label Target="{Binding ElementName=PropabilityCombo}" FontSize="14" Content="Prawdopobieństwo" Margin="5,20,0,20"/>
                         <ComboBox x:Name="PropabilityCombo" ItemsSource="{Binding PropabilityItems}" 
                                   SelectedItem="{Binding SelectedProbability,Mode=TwoWay}" Width="100" Margin="5,20,10,20">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding .,Converter={StaticResource EnumDescriptionConverter}}"/>
+                                    <TextBlock FontSize="14" Text="{Binding .,Converter={StaticResource EnumDescriptionConverter}}"/>
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
-                        <Label Target="{Binding ElementName=EffectCombo}" Content="Wpływ" Margin="10,20,0,20"/>
+                        <Label Target="{Binding ElementName=EffectCombo}" FontSize="14" Content="Wpływ" Margin="5,20,0,20"/>
                         <ComboBox x:Name="EffectCombo" Width="100" ItemsSource="{Binding PotencialEffectItems}"
-                                 SelectedValue="{Binding SelectedPotencialEffect,Mode=TwoWay}" Margin="5,20,0,20">
+                                 SelectedValue="{Binding SelectedPotencialEffect,Mode=TwoWay}" Margin="0,20,0,20">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding .,Converter={StaticResource EnumDescriptionConverter}}"/>
+                                    <TextBlock FontSize="14" Text="{Binding .,Converter={StaticResource EnumDescriptionConverter}}"/>
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
-                        <Label Target="{Binding ElementName=PriorityCombo}" Content="Określony priorytet" Margin="450,0,0,20"/>
-                        <TextBlock x:Name="PriorityCombo" Width="20" VerticalAlignment="Center" HorizontalAlignment="Center" Background="LightGray"
+                        <Label Target="{Binding ElementName=PriorityCombo}" FontSize="14" Content="Określony priorytet" Margin="440,0,0,20"/>
+                        <TextBlock x:Name="PriorityCombo" FontSize="14" Width="20" VerticalAlignment="Center" HorizontalAlignment="Center" Background="LightGray"
                                 Text="{Binding SelectedPriority, Mode=TwoWay,Converter={StaticResource EnumDescriptionConverter}}" Margin="5,0,0,20">
                           
                         </TextBlock>
                     </WrapPanel>
                 </GroupBox>
-                <GroupBox Header="Typ zagrożenia" Margin="20,0,20,20">
+                <GroupBox Header="Płaszczyzna oddziaływania" Margin="20,0,20,20">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <CheckBox IsChecked="{Binding SelectedTypeRiskINT,Mode=TwoWay}" Content="INT (Integralność)" Margin="20,20,10,20"/>
-                        <CheckBox IsChecked="{Binding SelectedTypeRiskCON,Mode=TwoWay}" Content="CON (Poufność)" Margin="10,20,10,20"/>
-                        <CheckBox IsChecked="{Binding SelectedTypeRiskAVA,Mode=TwoWay}" Content="AVA (Dostępność)" Margin="10,20,20,20"/>
+                        <CheckBox FontSize="14" IsChecked="{Binding SelectedTypeRiskINT,Mode=TwoWay}" Content="INT (Integralność)" Margin="20,20,10,20"/>
+                        <CheckBox FontSize="14" IsChecked="{Binding SelectedTypeRiskCON,Mode=TwoWay}" Content="CON (Poufność)" Margin="10,20,10,20"/>
+                        <CheckBox FontSize="14" IsChecked="{Binding SelectedTypeRiskAVA,Mode=TwoWay}" Content="AVA (Dostępność)" Margin="10,20,20,20"/>
                     </StackPanel>
                 </GroupBox>
 

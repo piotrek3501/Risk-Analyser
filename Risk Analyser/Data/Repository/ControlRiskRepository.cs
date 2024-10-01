@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Risk_analyser.Data.DBContext;
-using Risk_analyser.Model;
+using Risk_analyser.Data.Model;
+using Risk_analyser.Data.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -13,13 +14,11 @@ namespace Risk_analyser.Data.Repository
 {
     public class ControlRiskRepository
     {
-        private DataContext _context;
-        private DbSet<ControlRisk> Controls;
-        private DbSet<MitagationAction> MitagationActions;
-        private DbSet<Risk> Risks;
-        public ControlRiskRepository(DataContext context) {
-            _context = context;
-            Controls=_context.ControlsRisks;
+        private  DbSet<ControlRisk> Controls;
+        private  ContextManager ContextManager;
+        public ControlRiskRepository(DbSet<ControlRisk> controls) {
+
+            Controls= controls;
         }
 
         public ControlRisk LoadControlRiskWithEntities(long Id)
@@ -28,45 +27,26 @@ namespace Risk_analyser.Data.Repository
                 .Include(x => x.Mitagations)
                 .Single(x => x.ControlRiskId == Id);
         }
-        public void EditRisk(ControlRisk control)
+        public void EditControlRisk(ControlRisk control)
         {
             Controls.Update(control);
-            _context.SaveChanges();
+            ContextManager.SaveChanges();
         }
-        public void SaveRisk(ControlRisk control)
+        public void AddControlRisk(ControlRisk control)
         {
             Controls.Add(control);
-            _context.SaveChanges();
+            ContextManager.SaveChanges();
         }
-        public void DeleteRisk(ControlRisk control)
+        public void DeleteControlRisk(ControlRisk control)
         {
             Controls.Remove(control);
-            _context.SaveChanges();
+            ContextManager.SaveChanges();
         }
-        public bool CanDeleteRisk(ControlRisk control)
+        public List<ControlRisk> GetAllControlRisksForRisk(Risk risk)
         {
-            control = LoadControlRiskWithEntities(control.ControlRiskId);
+            return Controls.Where(x => x.Risks.Contains(risk)).ToList();
+        }
 
-            bool anyMitagations = _context.MitagationActions.Where(x => x.ControlRisks.Contains(control)).Any();
-            var Risks = _context.Risks.Where(x => x.Controls.Contains(control));
-            bool AnyOtherRisks;
-            if(Risks.Count()==1 && Risks.Last().Controls.Contains(control))
-            {
-                AnyOtherRisks = false;
-            }
-            else
-            {
-                AnyOtherRisks = true;
-            }
-            return !(anyMitagations || AnyOtherRisks);
-        } 
-        public List<MitagationAction> GetAllMitagationActions()
-        {
-            return new List<MitagationAction>(_context.MitagationActions);
-        }
-        public List<Risk> GetAllRiskWithAsset()
-        {
-            return new List<Risk>(_context.Risks.Include(x=>x.Asset));
-        }
+      
     }
 }

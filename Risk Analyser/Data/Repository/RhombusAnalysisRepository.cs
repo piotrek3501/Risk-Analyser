@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Risk_analyser.Data.DBContext;
-using Risk_analyser.Model;
+using Risk_analyser.Data.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,16 +11,21 @@ namespace Risk_analyser.Data.Repository
 {
     public class RhombusAnalysisRepository
     {
-        private DataContext _context;
-        private DbSet<RhombusAnalysis> RhombusAnalyses;
-        public RhombusAnalysisRepository(DataContext context)
+        private  DbSet<RhombusAnalysis> RhombusAnalyses;
+        private List<RhombusDocument> rhombusDocuments;
+        private  ContextManager ContextManager;
+
+        public RhombusAnalysisRepository(DbSet<RhombusAnalysis> rhombusAnalyses)
         {
-            _context = context;
-            RhombusAnalyses = context.RhombusAnalyses;
+            RhombusAnalyses = rhombusAnalyses;
         }
-        public bool CanDeleteRisk(FRAPAnalysis analysis)
+       
+        public List<RhombusDocument> GetRhombusAnalysesForAsset(Asset asset)
         {
-            return true;
+            rhombusDocuments = RhombusAnalyses.Where(x => x.Asset.AssetId == asset.AssetId).SelectMany(c => c.Results).ToList();
+
+            return rhombusDocuments;
+
         }
     }
 }

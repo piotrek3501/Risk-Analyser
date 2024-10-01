@@ -1,0 +1,45 @@
+﻿<Window x:Class="Risk_analyser.View.UpdateOrAddMitigationActionView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Risk_analyser.View"
+        mc:Ignorable="d"
+        ResizeMode="NoResize"
+        Icon="\Static\Icons\window_icon.ico"
+        Title="Dodawnia/Edycja akcji" Height="450" Width="600"
+        WindowStartupLocation="CenterScreen">
+    <Grid>
+        <StackPanel>
+            <StackPanel Orientation="Horizontal"  Margin="50,20,0,10" >
+                <Label Target="{Binding ElementName=Name}" FontSize="14" Content="Imie i nazwisko Pracownika "/>
+                <TextBox x:Name="Name" Text="{Binding WorkerName}" FontSize="14" TabIndex="0" Margin="10,5,0,10" Width="200"  />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="50,10,0,0">
+                <Label Target="{Binding ElementName=Description}" FontSize="14" Content="Opis Akcji"/>
+                <TextBox x:Name="Description" Text="{Binding  Action}" FontSize="14" Width="400"  TextWrapping="Wrap" AcceptsReturn="True"
+  VerticalScrollBarVisibility="Auto" MinHeight="150" Margin="12,0,0,0" TabIndex="1"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="20" HorizontalAlignment="Center">
+                <Label Content="Planowana data realizacji" FontSize="14" Target="{Binding ElementName=DateOfRealisation}"/>
+                <DatePicker x:Name="DateOfRealisation" Margin="20,0,0,0" FontSize="14" SelectedDate="{Binding RealisationDate}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Command="{Binding CurrentCommand}" Background="#C4DBF6" Width="100" FontSize="14" HorizontalAlignment="Center" Margin="0,30,10,10">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Content" Value="Edytuj"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedMitigation}" Value="{x:Null}">
+                                    <Setter Property="Content"  Value="Dodaj"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button Content="Anuluj" FontSize="14" Background="#C4DBF6" Command="{Binding CancelMitigationCommand}" Width="100" HorizontalAlignment="Center" Margin="0,30,10,10"/>
+
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Window>

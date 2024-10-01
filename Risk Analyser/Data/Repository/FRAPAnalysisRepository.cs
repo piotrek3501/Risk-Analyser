@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Risk_analyser.Data.DBContext;
-using Risk_analyser.Model;
+using Risk_analyser.Data.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,15 +11,22 @@ namespace Risk_analyser.Data.Repository
 {
     public class FRAPAnalysisRepository
     {
-        private DataContext _context;
-        private DbSet<FRAPAnalysis> FRAPAnalyses;
-        public FRAPAnalysisRepository(DataContext context) {
-            _context = context;
-            FRAPAnalyses=context.FRAPAnalyses;
+        private  DbSet<FRAPAnalysis> FRAPAnalyses;
+        private List<FRAPDocument> Documents;
+        private  ContextManager ContextManager;
+
+        public FRAPAnalysisRepository(DbSet<FRAPAnalysis> fRAPAnalyses) {
+            FRAPAnalyses= fRAPAnalyses;
+            
         }
-        public bool CanDeleteRisk(FRAPAnalysis analysis)
+       
+        public List<FRAPDocument> GetAllFRAPAnalysisForAsset(Asset asset)
         {
-            return true;
+            Documents=FRAPAnalyses.Where(x=>x.Asset.AssetId==asset.AssetId).SelectMany(c=>c.Results).ToList();
+            return Documents;
         }
+      
+
+       
     }
 }

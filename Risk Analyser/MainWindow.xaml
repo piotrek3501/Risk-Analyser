@@ -4,8 +4,11 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Risk_analyser.Converters"
+        xmlns:DetailsView="clr-namespace:Risk_analyser.View.UserControll.DetailsControls"
+        xmlns:ViewModels="clr-namespace:Risk_analyser.ViewModel"
         xmlns:UserControll="clr-namespace:Risk_analyser.View.UserControll.Menu"
-        WindowState="Maximized" Background="#595959" 
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
+        WindowState="Maximized" Background="#C4DBF6" 
         WindowStyle="None" MouseLeftButtonDown="Window_MouseLeftButtonDown"
         mc:Ignorable="d"
         Title="MainWindow" >
@@ -18,28 +21,93 @@
             <Style TargetType="Label">
                 <Setter Property="Foreground" Value="#F5F5F5"/>
             </Style>
-            <Style TargetType="Button">
-                <Setter Property="Foreground" Value="#F5F5F5"/>
-            </Style>
-        
+        <Style TargetType="Button">
+            <Setter Property="Foreground" Value="#F5F5F5"/>
+        </Style>
+        <Style TargetType="{x:Type Thumb}" x:Key="CustomThumbStyle">
+            <Setter Property="Background" Value="Green"/>
+            <!-- Kolor uchwytu suwaka -->
+            <Setter Property="BorderBrush" Value="Black"/>
+            <!-- Obramowanie uchwytu -->
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <!-- Styl dla ScrollBar -->
+        <Style TargetType="{x:Type ScrollBar}" x:Key="CustomHorizontalScrollBar">
+            <Setter Property="Background" Value="LightGray"/>
+            <!-- Kolor tła paska przewijania -->
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ScrollBar}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <!-- Ikona w lewo -->
+                                <ColumnDefinition Width="*"/>
+                                <!-- Uchwyt (Thumb) -->
+                                <ColumnDefinition Width="Auto"/>
+                                <!-- Ikona w prawo -->
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Ikona przewijania w lewo -->
+                            <RepeatButton Grid.Column="0" Command="ScrollBar.LineLeftCommand" 
+                                          Width="20" Background="LightGray" Foreground="Black">
+                                <fa:FontAwesome Icon="ArrowLeft" />
+                            </RepeatButton>
+
+                            <!-- Track dla Thumb (uchwytu suwaka) -->
+                            <Track Name="PART_Track" Grid.Column="1" Value="{TemplateBinding Value}"
+                                   Minimum="{TemplateBinding Minimum}" Maximum="{TemplateBinding Maximum}"
+                                   ViewportSize="{TemplateBinding ViewportSize}">
+                                <Track.Thumb>
+                                    <Thumb Style="{StaticResource CustomThumbStyle}" />
+                                </Track.Thumb>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Command="ScrollBar.PageRightCommand" />
+                                </Track.IncreaseRepeatButton>
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Command="ScrollBar.PageLeftCommand" />
+                                </Track.DecreaseRepeatButton>
+                            </Track>
+
+                            <!-- Ikona przewijania w prawo -->
+                            <RepeatButton Grid.Column="2" Command="ScrollBar.LineRightCommand" 
+                                          Width="20" Background="LightGray" Foreground="Black">
+                                <fa:FontAwesome Icon="ArrowRight" />
+                            </RepeatButton>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
 
     </Window.Resources>
+    
     <Grid >
+
         <Grid.RowDefinitions>
             <!-- Top Bar-->
             <RowDefinition Height="auto"/> 
             <!--Main-->
             <RowDefinition Height="0.9*"/>
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0" >
-            <UserControll:MenuBar/>
+
+        <Grid Grid.Row="0">
+            <!--<UserControll:MenuBar DataContext="}" /> -->
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" >
-                <Button x:Name="MinimizeButton" Height="30" Width="30" Content="-" Click="MinimizeButton_Click"  VerticalAlignment="Top"
-                        Margin="0" BorderThickness="0" Background="Transparent"/>
-                <Button x:Name="ResizeButton" Height="30" Width="30" Content="[]" Click="ResizeButton_Click" VerticalAlignment="Top"
-                        Margin="0" BorderThickness="0" Background="Transparent"/>
-                <Button x:Name="ExitButton" Width="30" Height="30" VerticalAlignment="Top" Content="X" Click="ExitButton_Click"
-                        Margin="0" BorderThickness="0" Background="Transparent"/>
+                <Button x:Name="MinimizeButton" Height="30" Width="30"  Foreground="Black"  Click="MinimizeButton_Click"  VerticalAlignment="Top"
+                        Margin="0" BorderThickness="0" Background="Transparent">
+                    <Image Source="Static\Icons\minimaze-icon.png" Width="24" Height="24" />
+                </Button>
+                <Button x:Name="ResizeButton" Height="30" Width="30"  Foreground="Black" Click="ResizeButton_Click" VerticalAlignment="Top"
+                        Margin="0" BorderThickness="0" Background="Transparent">
+                    <Image Source="Static\Icons\maximaze_icon.png" Width="24" Height="24"/>
+                </Button>
+                <Button x:Name="ExitButton" Width="30" Height="30" VerticalAlignment="Top" Foreground="Black"  Click="ExitButton_Click"
+                        Margin="0" BorderThickness="0" Background="Transparent">
+                    <Image Source="Static\Icons\close-icon.png" Width="24" Height="24" />
+                </Button>
             </StackPanel>
         </Grid>
         <!--Main Content-->
@@ -58,11 +126,17 @@
                     <RowDefinition Height="30"/>
                 </Grid.RowDefinitions>
 
-                <Grid  Grid.Row="0" Background="White" >
+                <Grid  Grid.Row="0" Background="White"  >
                     <StackPanel>
-                        <TextBlock Text="Zasoby" FontSize="20" Background="#595959" HorizontalAlignment="Stretch" Padding="5"  VerticalAlignment="Center" TextAlignment="Center" Margin="0,0,0,5"/>
-                        <ScrollViewer  Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                            <ListBox ItemsSource="{Binding Assets}" SelectedItem="{Binding SelectedAsset}" FontSize="16" BorderThickness="0">
+                        <TextBlock Text="Zasoby" Foreground="Black" FontSize="20" Background="#C4DBF6" HorizontalAlignment="Stretch" Padding="5"  VerticalAlignment="Center" TextAlignment="Center" Margin="0,0,0,5"/>
+                        <ScrollViewer  Grid.Row="1" VerticalScrollBarVisibility="Auto" Height="auto" Width="auto" HorizontalScrollBarVisibility="Auto"  >
+                            
+                            <ListBox ItemsSource="{Binding Assets}" SelectedItem="{Binding SelectedAsset}" x:Name="AssetsList" FontSize="16" BorderThickness="0" MaxHeight="970" MaxWidth="300">
+                                <ListBox.ItemContainerStyle>
+                                    <Style TargetType="ListBoxItem">
+                                        <EventSetter Event="MouseDoubleClick" Handler="ListBoxItem_MouseDoubleClick" />
+                                    </Style>
+                                </ListBox.ItemContainerStyle>
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding Name}"/>
@@ -74,19 +148,19 @@
 
                 </Grid>
 
-                <Grid Grid.Row="1" Width="auto" Background="#595959"  >
+                <Grid Grid.Row="1" Width="auto" Background="#C4DBF6"  >
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Center" >
-                        <Button Content="Dodaj"  Command="{Binding AddAssetCommand}"  Margin="0,0,80,0"  BorderThickness="0" Background="Transparent" FontSize="16"/>
-                        <Button Content="Usuń" Margin="0,0,80,0" Command="{Binding DeleteAssetCommand}" Visibility="{Binding SelectedAsset , Converter={StaticResource BooleanToVisibilityConverter} }"
+                        <Button Content="Dodaj"  Command="{Binding AddAssetCommand}"  Margin="0,0,80,0"  BorderThickness="0" Foreground="Black" Background="Transparent" FontSize="16"/>
+                        <Button Content="Usuń" Margin="0,0,80,0" Command="{Binding DeleteAssetCommand}" Foreground="Black" Visibility="{Binding SelectedAsset , Converter={StaticResource BooleanToVisibilityConverter} }"
                                 BorderThickness="0" Background="Transparent" FontSize="16"/>
-                        <Button Content="Edytuj"  BorderThickness="0" Command="{Binding UpdateAssetCommand}"  Visibility="{Binding SelectedAsset , Converter={StaticResource BooleanToVisibilityConverter} }" 
+                        <Button Content="Edytuj"  BorderThickness="0" Command="{Binding UpdateAssetCommand}" Foreground="Black"  Visibility="{Binding SelectedAsset , Converter={StaticResource BooleanToVisibilityConverter} }" 
                                 Background="Transparent" FontSize="16"/>
                     </StackPanel>
                 </Grid>
 
             </Grid>
             <!-- Right Edge of Assets List-->
-            <Grid Grid.Column="2" Background="#595959"/>
+            <Grid Grid.Column="2" Background="#C4DBF6"/>
             <!-- Risk and details-->
             <Grid Grid.Column="3" >
                 <Grid.RowDefinitions>
@@ -108,24 +182,31 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0"  >
 
-                        <TextBlock Text="Zagrożenia" FontSize="20" Background="#595959" HorizontalAlignment="Stretch" Padding="5"  VerticalAlignment="Center" TextAlignment="Center" />
+                        <TextBlock Text="Zagrożenia" FontSize="20" Background="#C4DBF6" Foreground="Black" HorizontalAlignment="Stretch" Padding="5"  VerticalAlignment="Center" TextAlignment="Center" />
                         <ScrollViewer VerticalScrollBarVisibility="Auto" >
-                            <ListBox   ItemsSource="{Binding Risks}" SelectedItem="{Binding SelectedRisk}" FontSize="16" BorderThickness="0"
-                                       HorizontalContentAlignment="Stretch">
+                            <ListBox   ItemsSource="{Binding Risks}" x:Name="RisksList" SelectedItem="{Binding SelectedRisk}" FontSize="16" BorderThickness="0"
+                                       HorizontalContentAlignment="Stretch" MaxHeight="440">
+                                <ListBox.ItemContainerStyle>
+                                    <Style TargetType="ListBoxItem">
+                                        <EventSetter Event="MouseDoubleClick" Handler="ListBoxItem_MouseDoubleClick" />
+                                    </Style>
+                                </ListBox.ItemContainerStyle>
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
                                         <DockPanel LastChildFill="True">
-                                            <Button Content="-" FontSize="16" Foreground="Red"
+                                            <Button  FontSize="16" Background="#C4DBF6" 
                                                     Command="{Binding DataContext.DeleteRiskCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
                                                     CommandParameter="{Binding .}"
-                                                    Width="20" Margin="0,0,0,0" DockPanel.Dock="Right"/>
+                                                    Width="24" Margin="0,0,0,0" DockPanel.Dock="Right">
+                                                <Image Source="Static\Icons\delete_icon.png" Width="20" Height="20"/>
+                                            </Button>
                                             <TextBlock Text="{Binding Name}" VerticalAlignment="Center" DockPanel.Dock="Left"/>
                                         </DockPanel>
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
                             </ListBox>
                         </ScrollViewer>
-                        <Button  Command="{Binding CurrentCommandAddOrUpdateRisk}" FontFamily="Italic" FontSize="16" Foreground="Black" Background="LightGray">
+                        <Button  Command="{Binding CurrentCommandAddOrUpdateRisk}" FontFamily="Italic" FontSize="16" Foreground="Black" Background="#C4DBF6">
                             <Button.Style>
                                 <Style TargetType="Button">
                                     <Setter Property="Visibility" Value="Visible"/>
@@ -143,30 +224,31 @@
                         </Button>
 
                     </StackPanel>
-                    <Border Grid.Column="1" Background="#595959" VerticalAlignment="Stretch"/>
-                    <StackPanel Grid.Column="2" >
-                        <TextBlock Text="Środki łagodzące" FontSize="20" Background="#595959" HorizontalAlignment="Stretch" Padding="5"  VerticalAlignment="Center" TextAlignment="Center" />
-                        <ScrollViewer VerticalScrollBarVisibility="Auto" >
-                            <ListBox   ItemsSource="{Binding Controls}" SelectedItem="{Binding SelectedControlRisk}" FontSize="16" BorderThickness="0"
-                                    HorizontalContentAlignment="Stretch">
+                    <Border Grid.Column="1" Background="#C4DBF6" VerticalAlignment="Stretch"/>
+                    <StackPanel Grid.Column="2"  >
+                        <TextBlock Text="Środki łagodzące" FontSize="20" Background="#C4DBF6" Foreground="Black" HorizontalAlignment="Stretch" Padding="5"  VerticalAlignment="Center" TextAlignment="Center" />
+                        <ScrollViewer VerticalScrollBarVisibility="Auto"  >
+                            <ListBox   ItemsSource="{Binding Controls}" Visibility="Visible" SelectedItem="{Binding SelectedControlRisk}" FontSize="16" BorderThickness="0"
+                                    HorizontalContentAlignment="Stretch" MinHeight="190"  >
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
                                         <DockPanel LastChildFill="True">
-                                            <Button Content="-" FontSize="16" Foreground="Red"
+                                            <Button  FontSize="16" Background="#C4DBF6" 
                                                     Command="{Binding DataContext.DeleteControlRiskCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
                                                     CommandParameter="{Binding .}"
-                                                    Width="20" Margin="0,0,0,0" DockPanel.Dock="Right"/>
-                                            <Button Content="+" FontSize="16" Foreground="Red"
-                                                    Command="{Binding DataContext.AddMitagationAction, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
-                                                    CommandParameter="{Binding .}"
-                                                    Width="20" Margin="0,0,0,0" DockPanel.Dock="Right"/>
+                                                    Width="24" Margin="0,0,0,0" DockPanel.Dock="Right">
+                                                <Image Source="Static\Icons\delete_icon.png" Width="20" Height="20"/>
+                                            </Button>
                                             <TextBlock Text="{Binding Name}" VerticalAlignment="Center" DockPanel.Dock="Left"/>
+
                                         </DockPanel>
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
+                           
                             </ListBox>
+                            
                         </ScrollViewer>
-                        <Button  Command="{Binding CurrentCommandAddOrUpdateControlRisk}"  FontFamily="Italic" FontSize="16" Foreground="Black" Background="LightGray">
+                        <Button  Command="{Binding CurrentCommandAddOrUpdateControlRisk}"   Background="#C4DBF6"  FontFamily="Italic" FontSize="16" Foreground="Black" >
                             <Button.Style>
                                 <Style TargetType="Button">
                                     <Setter Property="Visibility" Value="Visible"></Setter>
@@ -185,18 +267,95 @@
                                 </Style>
                             </Button.Style>
                         </Button>
+                        <StackPanel Margin="0">
+                            
+                            <TextBlock Text="Akcje łagodzące" FontSize="20" Background="#C4DBF6" Foreground="Black" HorizontalAlignment="Stretch" Padding="5"  VerticalAlignment="Center" TextAlignment="Center" 
+                            />
+                            <ScrollViewer VerticalScrollBarVisibility="Auto"  >
+                                <ListBox   ItemsSource="{Binding Mitagations}" Visibility="Visible" SelectedItem="{Binding SelectedMitagation}" FontSize="16" BorderThickness="0"
+                                    HorizontalContentAlignment="Stretch" MaxHeight="190" >
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <DockPanel LastChildFill="True">
+                                                <Button  FontSize="16" Background="#C4DBF6" 
+                             Command="{Binding DataContext.DeleteMitagationActionCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                             CommandParameter="{Binding .}"
+                             Width="24" Margin="0,0,0,0" DockPanel.Dock="Right">
+                                                    <Image Source="Static\Icons\delete_icon.png" Width="20" Height="20"/>
+                                                </Button>
+                                                <TextBlock Text="{Binding Action}" VerticalAlignment="Center" DockPanel.Dock="Left"/>
+
+                                            </DockPanel>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+
+                                </ListBox>
+                            </ScrollViewer>
+                            <Button  Command="{Binding CurrentCommandAddOrUpdateMitagation}"   Background="#C4DBF6"  FontFamily="Italic" FontSize="16" Foreground="Black" >
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Visibility" Value="Visible"></Setter>
+                                        <Setter Property="Content" Value="Edytuj Akcje"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedAsset}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding SelectedRisk}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding SelectedControlRisk}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding SelectedMitagation}" Value="{x:Null}">
+                                                <Setter Property="Content" Value="Dodaj nową Akcje"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
+                        
+                        
                     </StackPanel>
                 </Grid>
                 <!-- Optional info-->
                 <Grid Grid.Row="1" Background="White" Margin="0">
-                    <TextBlock Text="Szczegóły" FontSize="20" Background="#595959" HorizontalAlignment="Stretch" Padding="5"  VerticalAlignment="Top" TextAlignment="Center" Margin="0,0,0,5"/>
-                    
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="0.1*"/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Text="Szczegóły" FontSize="20" Background="#C4DBF6" Foreground="Black" HorizontalAlignment="Stretch" Padding="5"  VerticalAlignment="Top" TextAlignment="Center" Margin="0,0,0,5"/>
+                        <Grid Grid.Row="1">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" >
+                                <ContentControl  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Content="{Binding CurrentDetailsView}" Foreground="Black">
+                                    <ContentControl.Resources>
+                                        <DataTemplate DataType="{x:Type ViewModels:AssetDetailViewModel}">
+                                            <DetailsView:AssetDetails/>
+                                        </DataTemplate>
+                                        <DataTemplate DataType="{x:Type ViewModels:RiskDetailsViewModel}">
+                                            <DetailsView:RiskDetails/>
+                                        </DataTemplate>
+                                        <DataTemplate DataType="{x:Type ViewModels:ControlRiskDetailsViewModel}">
+                                            <DetailsView:ControlRiskDetails/>
+                                        </DataTemplate>
+                                        <DataTemplate DataType="{x:Type ViewModels:MitigationActionDetailsViewModel}">
+                                            <DetailsView:MitigationActionDetails/>
+                                        </DataTemplate>
+                                    </ContentControl.Resources>
+                                </ContentControl>
+                            </ScrollViewer>
+                        </Grid>
+                    </Grid>
+                   
                     
                 </Grid>
-                <!--Button edge of Screen-->
-                <Grid Grid.Row="2"/> 
-
+                
             </Grid>
+            
+            <!--Button edge of Screen-->
+            <Grid Grid.Row="2"/>
+            
             <!-- Right Edge of Screen-->
             <Grid Grid.Column="4"/>
         </Grid>

@@ -1,7 +1,8 @@
 ﻿using Risk_analyser.Data.DBContext;
+using Risk_analyser.Data.Model.Entities;
 using Risk_analyser.Data.Repository;
-using Risk_analyser.Model;
 using Risk_analyser.MVVM;
+using Risk_analyser.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,8 +16,7 @@ namespace Risk_analyser.ViewModel
 {
     public class UpdateOrAddAssetViewModel:ViewModelBase
     {
-        private readonly DataContext _context;
-        private AssetRepository assetRepository;
+        private AssetService _assetService;
         private string _name;
         private string _description;
         private Asset _selectedAsset;
@@ -29,8 +29,6 @@ namespace Risk_analyser.ViewModel
             }
         }
         public bool DialogResult {  get; private set; }
-       // public bool IsEditMode {  get; private set; }
-
 
         public string AssetName
         {
@@ -55,43 +53,36 @@ namespace Risk_analyser.ViewModel
         public ICommand CancelAssetCommand { get; }
         public ICommand EditAssetCommand { get; }
         public ICommand CurrentCommand { get; set; }
-        public UpdateOrAddAssetViewModel(DataContext context)
+        public UpdateOrAddAssetViewModel()
         {
-            _context = context;
-            AddAssetCommand = new RelayCommand(_ => AddAsset(), _ => CanAddAsset());
-            assetRepository = new AssetRepository(context);
+            _assetService=MainWindowService.GetAssetService();
+            AddAssetCommand = new RelayCommand(_ => AddAsset(), _ =>true);
             CancelAssetCommand = new RelayCommand(_=>CloseWindow(),_=>true);
             CurrentCommand = AddAssetCommand;
            // IsEditMode = false;
 
         }
-        public UpdateOrAddAssetViewModel(DataContext context,Asset asset):this(context) 
+        public UpdateOrAddAssetViewModel(Asset asset ) :this() 
         {
             _selectedAsset = asset;
             AssetName = _selectedAsset.Name;
             AssetDescription = _selectedAsset.Description;
-            EditAssetCommand = new RelayCommand(_=>EditAsset(),_=>CanEditAsset());
+            EditAssetCommand = new RelayCommand(_=>EditAsset(),_=>true);
             CurrentCommand = EditAssetCommand;
             // IsEditMode = true;
 
         }
-        private bool CanAddAsset()
-        {
-            return !string.IsNullOrWhiteSpace(AssetName) && !string.IsNullOrWhiteSpace(AssetDescription);
-        }
-        private bool CanEditAsset()
-        {
-            return !string.IsNullOrWhiteSpace(AssetName) && !string.IsNullOrWhiteSpace(AssetDescription);
-        }
+       
         private void EditAsset()
         {
-            Asset asset = SelectedAsset;
-            asset.Name = AssetName;
-            asset.Description = AssetDescription;
-            asset.CreationTime = DateTime.Now;
+            //Asset asset = SelectedAsset;
+            Asset ChangedAsset = new Asset();
+            ChangedAsset.AssetId = SelectedAsset.AssetId;
+            ChangedAsset.Name = AssetName;
+            ChangedAsset.Description = AssetDescription;
+            //ChangedAsset.CreationTime = DateTime.Now;
            
-           
-            assetRepository.EditAsset(asset);
+            _assetService.EditAsset(ChangedAsset);
             DialogResult = true;
             CloseWindow();
         }
@@ -103,14 +94,16 @@ namespace Risk_analyser.ViewModel
                 Name = AssetName,
                 Description = AssetDescription,
                 Risks = new List<Risk>(),
-                FRAPAnalysis=new List<FRAPAnalysis>(),
-                RhombusAnalysis=new List<RhombusAnalysis>(),
-                CreationTime=DateTime.Now
+                FRAPAnalysis=new FRAPAnalysis(),
+                RhombusAnalysis=new RhombusAnalysis()
+                {
+                    Results=new List<RhombusDocument>()
+                },
+                CreationTime=DateTime.Now,
             };
 
-            assetRepository.AddAsset(newAsset);
+            _assetService.AddAsset(newAsset);
 
-            MessageBox.Show("Zasób został pomyślnie dodany","Zasób dodany");
             DialogResult = true;
             CloseWindow();
         }

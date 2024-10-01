@@ -5,7 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Risk_analyser.View"
         mc:Ignorable="d"
-        Title="Dodawanie/Edycja Środka" Height="500" Width="600">
+        ResizeMode="NoResize"
+        Icon="\Static\Icons\window_icon.ico"
+        Title="Dodawanie/Edycja Środka" Height="530" Width="700"
+         WindowStartupLocation="CenterScreen">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
@@ -15,21 +18,21 @@
         <Grid Grid.Row="0"  Margin="10">
             <WrapPanel Orientation="Vertical" HorizontalAlignment="left">
                 <StackPanel Orientation="Horizontal">
-                    <Label Target="{Binding ElementName=Name}" Content="Nazwa" Margin="10,10,10,10"/>
-                    <TextBox x:Name="Name" Text="{Binding Name}" AcceptsReturn="True" TextWrapping="Wrap" 
-                             VerticalScrollBarVisibility="Auto" TabIndex="0" Margin="0,10,0,10" Width="490"/>
+                    <Label Target="{Binding ElementName=Name}" FontSize="14" Content="Nazwa" Margin="10,10,10,10"/>
+                    <TextBox x:Name="Name" Text="{Binding Name}" FontSize="14" AcceptsReturn="True" TextWrapping="Wrap" 
+                             VerticalScrollBarVisibility="Auto" TabIndex="0" Margin="0,10,0,10" Width="590"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal">
-                    <Label Target="{Binding ElementName=Description}" Content="Opis" Margin="20,10,10,10"/>
-                    <TextBox x:Name="Description" Text="{Binding Description}" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
-                             TextWrapping="Wrap" TabIndex="1" Margin="0,10,0,10" Width="490" Height="100"/>
+                    <Label Target="{Binding ElementName=Description}" FontSize="14" Content="Opis" Margin="20,10,10,10"/>
+                    <TextBox x:Name="Description" Text="{Binding Description}" FontSize="14" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
+                             TextWrapping="Wrap" TabIndex="1" Margin="0,10,0,10" Width="590" Height="100"/>
                 </StackPanel>
             </WrapPanel>
         </Grid>
         <Grid Grid.Row="1" Margin="10">
-            <TabControl>
-                <TabItem Header="Dostępne ryzyka">
-                    <DataGrid ItemsSource="{Binding RiskItems}" AutoGenerateColumns="False" CanUserAddRows="False"
+            <TabControl Background="#C4DBF6">
+                <TabItem Header="Dostępne ryzyka" FontSize="14">
+                    <DataGrid ItemsSource="{Binding RiskItems}" FontSize="14" AutoGenerateColumns="False" CanUserAddRows="False"
                               CanUserDeleteRows="False" >
                         
                         <DataGrid.Columns>
@@ -40,17 +43,24 @@
                         </DataGrid.Columns>
                     </DataGrid>
                 </TabItem>
-                <TabItem Header="Dostępne akcje łagodzące">
-                    <DataGrid>
-
+                <TabItem Header="Dostępne akcje łagodzące" FontSize="14" >
+                    <DataGrid AutoGenerateColumns="False" FontSize="14" ItemsSource="{Binding MitagationItems}" CanUserAddRows="False"
+                              CanUserDeleteRows="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Id" IsReadOnly="True" Binding="{Binding IdMitagation}"/>
+                            <DataGridCheckBoxColumn Header="Należy do środka?" Binding="{Binding BelongToControlRisk}"/>
+                            <DataGridTextColumn Header="Akcja" IsReadOnly="True" Binding="{Binding Action}"/>
+                            <DataGridCheckBoxColumn Header="Zrealizowano ?" Binding="{Binding Status}" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="Pracownik" Binding="{Binding Worker}" IsReadOnly="True"/>
+                        </DataGrid.Columns>
                     </DataGrid>
                 </TabItem>
             </TabControl>
         </Grid>
         <Grid Grid.Row="2" Margin="10" HorizontalAlignment="Center">
             <StackPanel Orientation="Horizontal">
-                <Button  Width="100" Content="Zapisz" Command="{Binding CurrentCommand}" Margin="0,0,10,0"/>
-                <Button Width="100" Content="Anuluj" Command="{Binding CancelControlRiskCommand}" Margin="10,0,0,0"/>
+                <Button  Width="100" Content="Zapisz" FontSize="14" Command="{Binding CurrentCommand}" Background="#C4DBF6" Margin="0,0,10,0"/>
+                <Button Width="100" Content="Anuluj" FontSize="14" Command="{Binding CancelControlRiskCommand}" Background="#C4DBF6" Margin="10,0,0,0"/>
             </StackPanel>
         
         </Grid>

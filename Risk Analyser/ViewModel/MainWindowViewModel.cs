@@ -1,12 +1,16 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage.Json;
 using Risk_analyser.Data.DBContext;
-using Risk_analyser.Model;
+using Risk_analyser.Data.Model.Entities;
 using Risk_analyser.MVVM;
+using Risk_analyser.services;
+using Risk_analyser.Services;
 using Risk_analyser.View;
+using Risk_analyser.View.UserControll.DetailsControls;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -16,7 +20,7 @@ namespace Risk_analyser.ViewModel
 {
     public class MainWindowViewModel : ViewModelBase
     {
-        private  DataContext _context;
+        //private  DataContext _context;
         public ICommand AddAssetCommand { get; }
         public ICommand AddRiskCommand { get; }
         public ICommand UpdateRiskCommand { get; }
@@ -33,12 +37,24 @@ namespace Risk_analyser.ViewModel
         public ICommand CurrentCommandAddOrUpdateRisk { get; set; }
         public ICommand CurrentCommandAddOrUpdateControlRisk { get; set; }
         public ICommand CurrentCommandAddOrUpdateMitagation { get; set; }
+        public ICommand AssetListDoubleClickCommand {  get; set; }
+        public ICommand RiskListDoubleClickCommand { get;set; }
+        private object _currentDetailsView { get; set; }
         private bool _isEditMode;
 
         private Asset _selectedAsset;
         private Risk _selectedRisk;
         private ControlRisk _selectedControlRisk;
         private MitagationAction _selectedMitagationAction;
+        public object CurrentDetailsView
+        {
+            get => _currentDetailsView;
+            private set
+            {
+                _currentDetailsView = value;
+                OnPropertyChanged(nameof(CurrentDetailsView));
+            }
+        }
         public bool IsEditMode {
             get { return _isEditMode; }
             set
@@ -111,8 +127,11 @@ namespace Risk_analyser.ViewModel
             {
                 _selectedAsset = value;
                 IsEditMode = _selectedAsset != null;
+                _selectedRisk = null;
+                Controls = null;
                 CurrentCommandAddOrUpdateRisk = AddRiskCommand;
                 OnPropertyChanged(nameof(CurrentCommandAddOrUpdateRisk));
+                ChangeDetailsView();
                 LoadRisks();
                 OnPropertyChanged();
 
@@ -133,8 +152,16 @@ namespace Risk_analyser.ViewModel
                 {
                     CurrentCommandAddOrUpdateRisk = AddRiskCommand;
                 }
+                if (_selectedRisk != null)
+                {
+                    LoadControlsRisk();
+                }
+                else
+                {
+                    Controls = null;
+                }
+                ChangeDetailsView();
                 OnPropertyChanged(nameof(CurrentCommandAddOrUpdateRisk));
-                LoadControlsRisk();
                 OnPropertyChanged();
 
             }
@@ -154,6 +181,8 @@ namespace Risk_analyser.ViewModel
                 {
                     CurrentCommandAddOrUpdateControlRisk= AddControlRiskCommand;
                 }
+                LoadMitagations();
+                ChangeDetailsView();
                 OnPropertyChanged(nameof(CurrentCommandAddOrUpdateControlRisk));
                 OnPropertyChanged();
             }
@@ -167,23 +196,25 @@ namespace Risk_analyser.ViewModel
                 IsEditMode= _selectedMitagationAction != null;
                 if (IsEditMode)
                 {
-                    CurrentCommandAddOrUpdateControlRisk = UpdateControlRiskCommand;
+                    CurrentCommandAddOrUpdateMitagation = UpdateMitagationActionCommand;
                 }
                 else
                 {
-                    CurrentCommandAddOrUpdateControlRisk = AddControlRiskCommand;
+                    CurrentCommandAddOrUpdateMitagation = AddMitagationAction;
                 }
-                OnPropertyChanged(nameof(CurrentCommandAddOrUpdateControlRisk));
-                LoadMitagations();
+                OnPropertyChanged(nameof(CurrentCommandAddOrUpdateMitagation));
+                // LoadMitagations();
+                ChangeDetailsView();
                 OnPropertyChanged();
             }
         }
 
 
 
-        public MainWindowViewModel(DataContext context)
+        public MainWindowViewModel()
         {
-            _context = context;
+            MainWindowService.InitServices();
+            //_context = context;
             AddAssetCommand = new RelayCommand(_ => ShowAddOrUpdateAssetWindow(false), _ => true);
             AddRiskCommand=new RelayCommand(_=>ShowAddOrUpdateRiskWindow(false), _ => SelectedAsset!=null);
             AddControlRiskCommand = new RelayCommand(_ => ShowAddOrUpdateControlRiskWindow(false), _ => SelectedRisk != null);
@@ -194,19 +225,49 @@ namespace Risk_analyser.ViewModel
             UpdateAssetCommand=new RelayCommand(_=>ShowAddOrUpdateAssetWindow(true),_=> IsEditMode==true);
             UpdateControlRiskCommand=new RelayCommand(_=>ShowAddOrUpdateControlRiskWindow(true),_=>IsEditMode==true);
             DeleteAssetCommand = new RelayCommand(_ => ShowDeletingAssetWindow(),_=>SelectedAsset!=null );
-            DeleteRiskCommand=new RelayCommand(ShowDeletingRiskWindow,_=>SelectedRisk!=null);
-            DeleteControlRiskCommand=new RelayCommand(_=>ShowDeletingControlRiskWindow(),_=>SelectedControlRisk!=null);
-            DeleteMitagationActionCommand=new RelayCommand(_=>ShowDeletingMitgationActionWindow(),_=>SelectedMitagation!=null);
+            DeleteRiskCommand = new RelayCommand(
+                parameter=>ShowDeletingRiskWindow(parameter),
+                parameter=>parameter!=null || SelectedRisk!=null
+                );
+            DeleteControlRiskCommand = new RelayCommand(
+                        parameter => ShowDeletingControlRiskWindow(parameter),  // Przekaż element z CommandParameter
+                        parameter => parameter != null || SelectedControlRisk != null  // Warunek: Musi istnieć kliknięty element lub wybrany element
+             );
+            //DeleteControlRiskCommand =new RelayCommand(_=> ShowDeletingControlRiskWindow(),_=>SelectedControlRisk!=null);
+            DeleteMitagationActionCommand=new RelayCommand(parameter=>ShowDeletingMitgationActionWindow(parameter),_=>SelectedMitagation!=null);
             CurrentCommandAddOrUpdateControlRisk = AddControlRiskCommand;
+            CurrentCommandAddOrUpdateMitagation=AddMitagationAction;
+            AssetListDoubleClickCommand = new RelayCommand(_ => AssetElementDoubleCliked(), _ => true);
+            RiskListDoubleClickCommand = new RelayCommand(_ => RiskElementDoubleCliked(), _ => true);
 
-            LoadData();
+
+            LoadAsset();
+
+        }
+
+        private void RiskElementDoubleCliked()
+        {
+            SelectedControlRisk = null;
+            SelectedMitagation = null;
+            Mitagations = null;
+            ChangeDetailsView();
+        }
+
+        private void AssetElementDoubleCliked()
+        {
+            SelectedRisk = null;
+            SelectedControlRisk = null;
+            SelectedMitagation = null;
+            ChangeDetailsView();
 
         }
 
         private void ShowDeletingRiskWindow(object parameter)
         {
             var deleteRiskView = new DeleteRiskView();
-            var deleteRiskViewModel=new DeleteRiskViewModel(_context,parameter as Risk);
+            if (SelectedRisk == null)
+                SelectedRisk = (Risk)parameter;
+            var deleteRiskViewModel=new DeleteRiskViewModel(SelectedRisk);
             deleteRiskView.DataContext= deleteRiskViewModel;
             deleteRiskView.ShowDialog();
             if (deleteRiskViewModel.DialogResult == true)
@@ -214,13 +275,16 @@ namespace Risk_analyser.ViewModel
                 OnPropertyChanged(nameof(Risk));
             }
             SelectedRisk = null;
+            SelectedControlRisk = null;
+            Controls = null;
+            Mitagations = null;
             LoadRisks();
         }
 
         private void ShowDeletingAssetWindow()
         {
             var deleteAssetView = new DeleteAssetView();
-            var deleteAssetViewModel=new DeleteAssetViewModel(_context,SelectedAsset);
+            var deleteAssetViewModel=new DeleteAssetViewModel(SelectedAsset);
             deleteAssetView.DataContext= deleteAssetViewModel;
             deleteAssetView.ShowDialog();
             if (deleteAssetViewModel.DialogResult == true)
@@ -228,7 +292,61 @@ namespace Risk_analyser.ViewModel
                 OnPropertyChanged(nameof(Asset));
             }
             SelectedAsset = null;
-            LoadData();
+            SelectedRisk = null;
+            SelectedControlRisk = null;
+            Controls = null;
+            Mitagations = null;
+            Risks = null;
+            LoadAsset();
+        }
+        private void ChangeDetailsView()
+        {
+            if(SelectedAsset!=null && SelectedRisk==null && SelectedControlRisk == null)
+            {
+                AssetDetails assetDetailsView=new AssetDetails();
+                assetDetailsView.DataContext = new AssetDetailViewModel(SelectedAsset);
+                CurrentDetailsView = assetDetailsView;
+            }
+            else if(SelectedAsset!=null && SelectedRisk!=null && SelectedControlRisk == null)
+            {
+                RiskDetails riskDetailsView=new RiskDetails();
+                riskDetailsView.DataContext = new RiskDetailsViewModel(SelectedRisk);
+                CurrentDetailsView=riskDetailsView;
+            }
+            else if (SelectedAsset != null && SelectedRisk != null && SelectedControlRisk != null && SelectedMitagation == null)
+            {
+                ControlRiskDetails controlRiskDetailsView=new ControlRiskDetails();
+                controlRiskDetailsView.DataContext = new ControlRiskDetailsViewModel(SelectedControlRisk);
+                CurrentDetailsView=controlRiskDetailsView;
+            }
+            else if(SelectedAsset != null && SelectedRisk != null && SelectedControlRisk != null && SelectedMitagation != null)
+            {
+                MitigationActionDetails mitigationActionDetails=new MitigationActionDetails();
+                mitigationActionDetails.DataContext=new MitigationActionDetailsViewModel(SelectedMitagation);
+                CurrentDetailsView = mitigationActionDetails;
+            }
+            else
+            {
+                CurrentDetailsView = null;
+            }
+        }
+        private void ShowDeletingControlRiskWindow(object parameter)
+        {
+            var deleteControlRiskView = new DeleteControlRiskView();
+            DeleteControlRiskViewModel deleteControlRiskViewModel;
+            if(SelectedControlRisk==null)
+            SelectedControlRisk = (ControlRisk)parameter;
+
+            deleteControlRiskViewModel = new DeleteControlRiskViewModel(SelectedControlRisk, SelectedRisk);
+            deleteControlRiskView.DataContext = deleteControlRiskViewModel;
+            deleteControlRiskView.ShowDialog();
+            if (deleteControlRiskViewModel.DialogResult == true)
+            {
+                OnPropertyChanged(nameof(ControlRisk));
+            }
+            SelectedControlRisk = null;
+            Mitagations = null;
+            LoadControlsRisk();
         }
         private void ShowAddOrUpdateRiskWindow(bool Editing)
         {
@@ -237,22 +355,27 @@ namespace Risk_analyser.ViewModel
             if (Editing)
             {
                 IsEditMode = true;
-                updateOrAddRiskViewModel = new UpdateOrAddRiskViewModel(_context, SelectedRisk);
+                updateOrAddRiskViewModel = new UpdateOrAddRiskViewModel(SelectedRisk);
                 updateOrAddRiskView.DataContext = updateOrAddRiskViewModel;
             }
             else
             {
                 IsEditMode = false;
-                updateOrAddRiskViewModel = new UpdateOrAddRiskViewModel(_context, SelectedAsset);
+                updateOrAddRiskViewModel = new UpdateOrAddRiskViewModel(SelectedAsset);
                 updateOrAddRiskView.DataContext = updateOrAddRiskViewModel;
             }
             updateOrAddRiskView.ShowDialog();
             if (updateOrAddRiskViewModel.DialogResult == true)
             {
                 OnPropertyChanged(nameof(Risk));
+                
             }
             //IsEditMode = false;
             SelectedRisk = null;
+            SelectedControlRisk = null;
+            SelectedMitagation = null;
+            Controls = null;
+            Mitagations = null;
             CurrentCommandAddOrUpdateRisk = AddRiskCommand;
             OnPropertyChanged(nameof(CurrentCommandAddOrUpdateRisk));
             LoadRisks();
@@ -265,13 +388,13 @@ namespace Risk_analyser.ViewModel
             if (Editing)
             {
                   IsEditMode = true;
-                 updateOrAddControlRiskViewModel = new UpdateOrAddControlRiskViewModel(_context,SelectedControlRisk);
+                 updateOrAddControlRiskViewModel = new UpdateOrAddControlRiskViewModel(SelectedControlRisk);
                 updateOrAddControlRiskView.DataContext= updateOrAddControlRiskViewModel;
             }
             else
             {
                 IsEditMode = false;
-                 updateOrAddControlRiskViewModel = new UpdateOrAddControlRiskViewModel(_context,SelectedAsset);
+                 updateOrAddControlRiskViewModel = new UpdateOrAddControlRiskViewModel(SelectedAsset);
                 updateOrAddControlRiskView.DataContext = updateOrAddControlRiskViewModel;
             }
             
@@ -283,24 +406,26 @@ namespace Risk_analyser.ViewModel
             //IsEditMode = false;
             CurrentCommandAddOrUpdateControlRisk=AddControlRiskCommand;
             SelectedControlRisk = null;
+            SelectedMitagation = null;
             OnPropertyChanged(nameof(CurrentCommandAddOrUpdateControlRisk));
             LoadControlsRisk();
+            Mitagations = null;
             OnPropertyChanged();
         }
         private void ShowAddOrUpdateMitagationAction(bool Editing)
         {
-            var updateOrAddMitagtionActionView = new UpdateOrAddMitgationActionView();
+            var updateOrAddMitagtionActionView = new UpdateOrAddMitigationActionView();
             UpdateOrAddMitagationViewModel updateOrAddMitagationViewModel;
             if (Editing)
             {
                 IsEditMode = true;
-                updateOrAddMitagationViewModel = new UpdateOrAddMitagationViewModel(_context,SelectedMitagation);
+                updateOrAddMitagationViewModel = new UpdateOrAddMitagationViewModel(SelectedMitagation);
                 updateOrAddMitagtionActionView.DataContext = updateOrAddMitagationViewModel;
             }
             else
             {
                 IsEditMode = false;
-                updateOrAddMitagationViewModel = new UpdateOrAddMitagationViewModel(_context,SelectedControlRisk);
+                updateOrAddMitagationViewModel = new UpdateOrAddMitagationViewModel(SelectedControlRisk);
                 updateOrAddMitagtionActionView.DataContext = updateOrAddMitagationViewModel;
             }
 
@@ -312,44 +437,54 @@ namespace Risk_analyser.ViewModel
             //IsEditMode = false;
             CurrentCommandAddOrUpdateMitagation = AddMitagationAction;
             SelectedMitagation = null;
+            Mitagations = null;
             OnPropertyChanged(nameof(CurrentCommandAddOrUpdateMitagation));
             LoadMitagations();
             OnPropertyChanged();
         }
 
-        private void ShowDeletingControlRiskWindow()
+        
+        private void ShowDeletingMitgationActionWindow(object parameter)
         {
-            throw new NotImplementedException();
-        }
-        private void ShowDeletingMitgationActionWindow()
-        {
-            throw new NotImplementedException();
+            var deleteMitigationActionView = new DeleteMitigationActionView();
+            deleteMitigationActionView.DataContext = new DeleteMitigationActionViewModel((MitagationAction)parameter,SelectedControlRisk);
+            deleteMitigationActionView.ShowDialog();
+            if (deleteMitigationActionView.DialogResult == true)
+            {
+                OnPropertyChanged(nameof(MitagationAction));
+            }
+            SelectedMitagation = null;
+
+            LoadMitagations();
+            OnPropertyChanged(nameof(Mitagations));
+            OnPropertyChanged();
         }
         private void LoadControlsRisk()
         {
             if (SelectedRisk != null)
             {
-                Controls = new ObservableCollection<ControlRisk>(_context.ControlsRisks.Where(x => x.Risks.Contains(SelectedRisk)));
+                Controls=MainWindowService.LoadControlRiskForRisk(SelectedRisk);
+                
             }
         }
         private void LoadMitagations()
         {
             if(SelectedControlRisk != null)
             {
-                Mitagations = new ObservableCollection<MitagationAction>(_context.MitagationActions
-                   .Where(x=>x.ControlRisks.Contains(SelectedControlRisk)));
+                Mitagations = MainWindowService.LoadMitigationForControlRisk(SelectedControlRisk);
             }
         }
-        private void LoadData()
+        private void LoadAsset()
         {
-            Assets = new ObservableCollection<Asset>(_context.Assets.ToList());
+
+            Assets = MainWindowService.LoadAllAssets();
            
         }
         private  void LoadRisks()
         {
             if (SelectedAsset != null)
             {
-                Risks = new ObservableCollection<Risk>(_context.Risks.Where(x => x.Asset.AssetId == SelectedAsset.AssetId).ToList());
+                Risks = new ObservableCollection<Risk>(MainWindowService.LoadAllRiskForAsset(SelectedAsset));
             }
         }
         private void ShowAddOrUpdateAssetWindow(bool Editing)
@@ -359,13 +494,13 @@ namespace Risk_analyser.ViewModel
             if (Editing)
             {
                 IsEditMode = true;
-                updateOrAddAssetViewModel = new UpdateOrAddAssetViewModel(_context,SelectedAsset);
+                updateOrAddAssetViewModel = new UpdateOrAddAssetViewModel(SelectedAsset);
                 updateOrAddAssetView.DataContext = updateOrAddAssetViewModel;
             }
             else
             {
                 IsEditMode = false;
-                updateOrAddAssetViewModel = new UpdateOrAddAssetViewModel(_context);
+                updateOrAddAssetViewModel = new UpdateOrAddAssetViewModel();
                 updateOrAddAssetView.DataContext = updateOrAddAssetViewModel;
             }
             updateOrAddAssetView.ShowDialog();
@@ -373,9 +508,15 @@ namespace Risk_analyser.ViewModel
             {
                 OnPropertyChanged(nameof(Asset));
             }
-           // IsEditMode = false;
+            // IsEditMode = false;
+            SelectedRisk = null;
+            SelectedControlRisk = null;
+            SelectedMitagation = null;
+            Mitagations = null;
+            Controls = null;
+            Risks = null;
             SelectedAsset = null;
-            LoadData();
+            LoadAsset();
         }
         
     }

@@ -4,15 +4,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Risk_analyser.Model;
 using System.Windows;
+using Risk_analyser.Data.Model.Entities;
 
 namespace Risk_analyser.Data.DBContext
 {
     public class DataContext : DbContext
     {
 
-        public DbSet<ActionReport> ActionReports { get; set; }
+       /// public DbSet<ActionReport> ActionReports { get; set; }
         public DbSet<Asset> Assets { get; set; }
         public DbSet<ControlRisk> ControlsRisks { get; set; }
         public DbSet<FRAPAnalysis> FRAPAnalyses { get; set; }
@@ -28,20 +28,7 @@ namespace Risk_analyser.Data.DBContext
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<ActionReport>(ar =>
-            {
-
-                ar.HasKey(ra => new { ra.RiskId, ra.MitagatioActionId });
-
-                ar.HasOne(x => x.Risk)
-                .WithMany(c => c.DoneMitigationActions)
-                .HasForeignKey(x => x.RiskId);
-
-                ar.HasOne(x => x.Action)
-                .WithMany(c => c.ActionReports)
-                .HasForeignKey(x => x.MitagatioActionId);
-
-            });
+           
             modelBuilder.Entity<MitagationAction>(ma =>
             {
                 ma.HasKey(x => x.MitagatioActionId);
@@ -95,7 +82,9 @@ namespace Risk_analyser.Data.DBContext
                 ra.HasKey(x => x.RhombusAnalysisId);
 
                 ra.HasOne(x => x.Asset)
-                .WithMany(c => c.RhombusAnalysis);
+                .WithOne(x => x.RhombusAnalysis)
+                .HasForeignKey<Asset>(x => x.RhombusAnalysisId);
+                
 
                 ra.HasMany(x => x.Results)
                 .WithOne(c => c.RhombusAnalysis)
@@ -108,7 +97,8 @@ namespace Risk_analyser.Data.DBContext
                 fa.HasKey(x => x.FRAPAnalysisId);
 
                 fa.HasOne(x => x.Asset)
-                .WithMany(c => c.FRAPAnalysis);
+                .WithOne(x => x.FRAPAnalysis)
+                .HasForeignKey<Asset>(x => x.FRAPAnalysisId);
 
                 fa.HasMany(x => x.Results)
                 .WithOne(c => c.FRAPAnalysis)

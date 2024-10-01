@@ -5,6 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Risk_analyser.View"
         mc:Ignorable="d"
+        Icon="\Static\Icons\window_icon.ico"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen"
         Title="Usuwanie zasobu" Height="250" Width="400">
 
     <Grid >
@@ -19,8 +22,8 @@
         </StackPanel>
         
         <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Grid.Row="1" >
-            <Button Width="100" Height="20" Content="Usuń" Command="{Binding DeleteAssetCommand}" Margin="0,0,15,0"/>
-            <Button Width="100" Height="20" Content="Anuluj" Command="{Binding CancelAssetCommand}" Margin="0,0,15,0"/>
+            <Button Width="100" Height="20" Content="Usuń" Background="#C4DBF6" Command="{Binding DeleteAssetCommand}" Margin="0,0,15,0"/>
+            <Button Width="100" Height="20" Content="Anuluj" Background="#C4DBF6" Command="{Binding CancelAssetCommand}" Margin="0,0,15,0"/>
 
         </StackPanel>
         

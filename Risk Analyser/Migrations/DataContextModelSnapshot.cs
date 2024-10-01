@@ -17,7 +17,7 @@ namespace Risk_analyser.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.6")
+                .HasAnnotation("ProductVersion", "8.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -52,25 +52,7 @@ namespace Risk_analyser.Migrations
                     b.ToTable("ControlRiskRisk");
                 });
 
-            modelBuilder.Entity("Risk_analyser.Model.ActionReport", b =>
-                {
-                    b.Property<long>("RiskId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("MitagatioActionId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("ActionReportId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("RiskId", "MitagatioActionId");
-
-                    b.HasIndex("MitagatioActionId");
-
-                    b.ToTable("ActionReports");
-                });
-
-            modelBuilder.Entity("Risk_analyser.Model.Asset", b =>
+            modelBuilder.Entity("Risk_analyser.Data.Model.Entities.Asset", b =>
                 {
                     b.Property<long>("AssetId")
                         .ValueGeneratedOnAdd()
@@ -84,22 +66,37 @@ namespace Risk_analyser.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<long>("FRAPAnalysisId")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<long>("RhombusAnalysisId")
+                        .HasColumnType("bigint");
+
                     b.HasKey("AssetId");
+
+                    b.HasIndex("FRAPAnalysisId")
+                        .IsUnique();
+
+                    b.HasIndex("RhombusAnalysisId")
+                        .IsUnique();
 
                     b.ToTable("Assets");
                 });
 
-            modelBuilder.Entity("Risk_analyser.Model.ControlRisk", b =>
+            modelBuilder.Entity("Risk_analyser.Data.Model.Entities.ControlRisk", b =>
                 {
                     b.Property<long>("ControlRiskId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ControlRiskId"));
+
+                    b.Property<DateTime>("CreationDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -114,13 +111,16 @@ namespace Risk_analyser.Migrations
                     b.ToTable("ControlsRisks");
                 });
 
-            modelBuilder.Entity("Risk_analyser.Model.Document", b =>
+            modelBuilder.Entity("Risk_analyser.Data.Model.Entities.Document", b =>
                 {
                     b.Property<int>("DocumentId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DocumentId"));
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Discriminator")
                         .IsRequired()
@@ -139,12 +139,12 @@ namespace Risk_analyser.Migrations
 
                     b.ToTable("Files");
 
-                    b.HasDiscriminator<string>("Discriminator").HasValue("Document");
+                    b.HasDiscriminator().HasValue("Document");
 
                     b.UseTphMappingStrategy();
                 });
 
-            modelBuilder.Entity("Risk_analyser.Model.FRAPAnalysis", b =>
+            modelBuilder.Entity("Risk_analyser.Data.Model.Entities.FRAPAnalysis", b =>
                 {
                     b.Property<long>("FRAPAnalysisId")
                         .ValueGeneratedOnAdd()
@@ -152,20 +152,12 @@ namespace Risk_analyser.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("FRAPAnalysisId"));
 
-                    b.Property<long>("AssetId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime>("TimeAnalysis")
-                        .HasColumnType("datetime2");
-
                     b.HasKey("FRAPAnalysisId");
-
-                    b.HasIndex("AssetId");
 
                     b.ToTable("FRAPAnalyses");
                 });
 
-            modelBuilder.Entity("Risk_analyser.Model.MitagationAction", b =>
+            modelBuilder.Entity("Risk_analyser.Data.Model.Entities.MitagationAction", b =>
                 {
                     b.Property<long>("MitagatioActionId")
                         .ValueGeneratedOnAdd()
@@ -177,19 +169,25 @@ namespace Risk_analyser.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateOnly>("DateOfAction")
-                        .HasColumnType("date");
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DateOfAction")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Person")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Status")
+                        .HasColumnType("bit");
 
                     b.HasKey("MitagatioActionId");
 
                     b.ToTable("MitagationActions");
                 });
 
-            modelBuilder.Entity("Risk_analyser.Model.Rhombus", b =>
+            modelBuilder.Entity("Risk_analyser.Data.Model.Entities.Rhombus", b =>
                 {
                     b.Property<long>("RhombusId")
                         .ValueGeneratedOnAdd()
@@ -221,7 +219,7 @@ namespace Risk_analyser.Migrations
                     b.ToTable("Rhombuses");
                 });
 
-            modelBuilder.Entity("Risk_analyser.Model.RhombusAnalysis", b =>
+            modelBuilder.Entity("Risk_analyser.Data.Model.Entities.RhombusAnalysis", b =>
                 {
                     b.Property<long>("RhombusAnalysisId")
                         .ValueGeneratedOnAdd()
@@ -229,20 +227,12 @@ namespace Risk_analyser.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("RhombusAnalysisId"));
 
-                    b.Property<long>("AssetId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime>("TimeAnalysis")
-                        .HasColumnType("datetime2");
-
                     b.HasKey("RhombusAnalysisId");
-
-                    b.HasIndex("AssetId");
 
                     b.ToTable("RhombusAnalyses");
                 });
 
-            modelBuilder.Entity("Risk_analyser.Model.Risk", b =>
+            modelBuilder.Entity("Risk_analyser.Data.Model.Entities.Risk", b =>
                 {
                     b.Property<long>("RiskId")
                         .ValueGeneratedOnAdd()
@@ -284,7 +274,7 @@ namespace Risk_analyser.Migrations
                     b.ToTable("Risks");
                 });
 
-            modelBuilder.Entity("Risk_analyser.Model.RiskType", b =>
+            modelBuilder.Entity("Risk_analyser.Data.Model.Entities.RiskType", b =>
                 {
                     b.Property<long>("RiskTypeId")
                         .ValueGeneratedOnAdd()
@@ -306,9 +296,9 @@ namespace Risk_analyser.Migrations
                     b.ToTable("RiskTypes");
                 });
 
-            modelBuilder.Entity("Risk_analyser.Model.FRAPDocument", b =>
+            modelBuilder.Entity("Risk_analyser.Data.Model.Entities.FRAPDocument", b =>
                 {
-                    b.HasBaseType("Risk_analyser.Model.Document");
+                    b.HasBaseType("Risk_analyser.Data.Model.Entities.Document");
 
                     b.Property<long?>("FRAPAnalysisId")
                         .HasColumnType("bigint");
@@ -318,9 +308,9 @@ namespace Risk_analyser.Migrations
                     b.HasDiscriminator().HasValue("FRAPDocument");
                 });
 
-            modelBuilder.Entity("Risk_analyser.Model.RhombusDocument", b =>
+            modelBuilder.Entity("Risk_analyser.Data.Model.Entities.RhombusDocument", b =>
                 {
-                    b.HasBaseType("Risk_analyser.Model.Document");
+                    b.HasBaseType("Risk_analyser.Data.Model.Entities.Document");
 
                     b.Property<long?>("RhombusAnalysisId")
                         .HasColumnType("bigint");
@@ -332,13 +322,13 @@ namespace Risk_analyser.Migrations
 
             modelBuilder.Entity("ControlRiskMitagationAction", b =>
                 {
-                    b.HasOne("Risk_analyser.Model.ControlRisk", null)
+                    b.HasOne("Risk_analyser.Data.Model.Entities.ControlRisk", null)
                         .WithMany()
                         .HasForeignKey("ControlRisksControlRiskId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Risk_analyser.Model.MitagationAction", null)
+                    b.HasOne("Risk_analyser.Data.Model.Entities.MitagationAction", null)
                         .WithMany()
                         .HasForeignKey("MitagationsMitagatioActionId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -347,74 +337,52 @@ namespace Risk_analyser.Migrations
 
             modelBuilder.Entity("ControlRiskRisk", b =>
                 {
-                    b.HasOne("Risk_analyser.Model.ControlRisk", null)
+                    b.HasOne("Risk_analyser.Data.Model.Entities.ControlRisk", null)
                         .WithMany()
                         .HasForeignKey("ControlsControlRiskId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Risk_analyser.Model.Risk", null)
+                    b.HasOne("Risk_analyser.Data.Model.Entities.Risk", null)
                         .WithMany()
                         .HasForeignKey("RisksRiskId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Risk_analyser.Model.ActionReport", b =>
+            modelBuilder.Entity("Risk_analyser.Data.Model.Entities.Asset", b =>
                 {
-                    b.HasOne("Risk_analyser.Model.MitagationAction", "Action")
-                        .WithMany("ActionReports")
-                        .HasForeignKey("MitagatioActionId")
+                    b.HasOne("Risk_analyser.Data.Model.Entities.FRAPAnalysis", "FRAPAnalysis")
+                        .WithOne("Asset")
+                        .HasForeignKey("Risk_analyser.Data.Model.Entities.Asset", "FRAPAnalysisId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Risk_analyser.Model.Risk", "Risk")
-                        .WithMany("DoneMitigationActions")
-                        .HasForeignKey("RiskId")
+                    b.HasOne("Risk_analyser.Data.Model.Entities.RhombusAnalysis", "RhombusAnalysis")
+                        .WithOne("Asset")
+                        .HasForeignKey("Risk_analyser.Data.Model.Entities.Asset", "RhombusAnalysisId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Action");
+                    b.Navigation("FRAPAnalysis");
 
-                    b.Navigation("Risk");
+                    b.Navigation("RhombusAnalysis");
                 });
 
-            modelBuilder.Entity("Risk_analyser.Model.FRAPAnalysis", b =>
+            modelBuilder.Entity("Risk_analyser.Data.Model.Entities.Rhombus", b =>
                 {
-                    b.HasOne("Risk_analyser.Model.Asset", "Asset")
-                        .WithMany("FRAPAnalysis")
-                        .HasForeignKey("AssetId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Asset");
-                });
-
-            modelBuilder.Entity("Risk_analyser.Model.Rhombus", b =>
-                {
-                    b.HasOne("Risk_analyser.Model.Risk", "Risk")
+                    b.HasOne("Risk_analyser.Data.Model.Entities.Risk", "Risk")
                         .WithOne("RhombusParams")
-                        .HasForeignKey("Risk_analyser.Model.Rhombus", "RiskId")
+                        .HasForeignKey("Risk_analyser.Data.Model.Entities.Rhombus", "RiskId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Risk");
                 });
 
-            modelBuilder.Entity("Risk_analyser.Model.RhombusAnalysis", b =>
+            modelBuilder.Entity("Risk_analyser.Data.Model.Entities.Risk", b =>
                 {
-                    b.HasOne("Risk_analyser.Model.Asset", "Asset")
-                        .WithMany("RhombusAnalysis")
-                        .HasForeignKey("AssetId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Asset");
-                });
-
-            modelBuilder.Entity("Risk_analyser.Model.Risk", b =>
-                {
-                    b.HasOne("Risk_analyser.Model.Asset", "Asset")
+                    b.HasOne("Risk_analyser.Data.Model.Entities.Asset", "Asset")
                         .WithMany("Risks")
                         .HasForeignKey("AssetId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -423,9 +391,9 @@ namespace Risk_analyser.Migrations
                     b.Navigation("Asset");
                 });
 
-            modelBuilder.Entity("Risk_analyser.Model.RiskType", b =>
+            modelBuilder.Entity("Risk_analyser.Data.Model.Entities.RiskType", b =>
                 {
-                    b.HasOne("Risk_analyser.Model.Risk", "Risk")
+                    b.HasOne("Risk_analyser.Data.Model.Entities.Risk", "Risk")
                         .WithMany("Types")
                         .HasForeignKey("RiskId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -434,52 +402,47 @@ namespace Risk_analyser.Migrations
                     b.Navigation("Risk");
                 });
 
-            modelBuilder.Entity("Risk_analyser.Model.FRAPDocument", b =>
+            modelBuilder.Entity("Risk_analyser.Data.Model.Entities.FRAPDocument", b =>
                 {
-                    b.HasOne("Risk_analyser.Model.FRAPAnalysis", "FRAPAnalysis")
+                    b.HasOne("Risk_analyser.Data.Model.Entities.FRAPAnalysis", "FRAPAnalysis")
                         .WithMany("Results")
                         .HasForeignKey("FRAPAnalysisId");
 
                     b.Navigation("FRAPAnalysis");
                 });
 
-            modelBuilder.Entity("Risk_analyser.Model.RhombusDocument", b =>
+            modelBuilder.Entity("Risk_analyser.Data.Model.Entities.RhombusDocument", b =>
                 {
-                    b.HasOne("Risk_analyser.Model.RhombusAnalysis", "RhombusAnalysis")
+                    b.HasOne("Risk_analyser.Data.Model.Entities.RhombusAnalysis", "RhombusAnalysis")
                         .WithMany("Results")
                         .HasForeignKey("RhombusAnalysisId");
 
                     b.Navigation("RhombusAnalysis");
                 });
 
-            modelBuilder.Entity("Risk_analyser.Model.Asset", b =>
+            modelBuilder.Entity("Risk_analyser.Data.Model.Entities.Asset", b =>
                 {
-                    b.Navigation("FRAPAnalysis");
-
-                    b.Navigation("RhombusAnalysis");
-
                     b.Navigation("Risks");
                 });
 
-            modelBuilder.Entity("Risk_analyser.Model.FRAPAnalysis", b =>
+            modelBuilder.Entity("Risk_analyser.Data.Model.Entities.FRAPAnalysis", b =>
                 {
+                    b.Navigation("Asset")
+                        .IsRequired();
+
                     b.Navigation("Results");
                 });
 
-            modelBuilder.Entity("Risk_analyser.Model.MitagationAction", b =>
+            modelBuilder.Entity("Risk_analyser.Data.Model.Entities.RhombusAnalysis", b =>
                 {
-                    b.Navigation("ActionReports");
-                });
+                    b.Navigation("Asset")
+                        .IsRequired();
 
-            modelBuilder.Entity("Risk_analyser.Model.RhombusAnalysis", b =>
-                {
                     b.Navigation("Results");
                 });
 
-            modelBuilder.Entity("Risk_analyser.Model.Risk", b =>
+            modelBuilder.Entity("Risk_analyser.Data.Model.Entities.Risk", b =>
                 {
-                    b.Navigation("DoneMitigationActions");
-
                     b.Navigation("RhombusParams")
                         .IsRequired();
 
